@@ -1,2 +1,5 @@
 save/*
 __pycache__/*
+remake/*
+recover/*
+backup/*

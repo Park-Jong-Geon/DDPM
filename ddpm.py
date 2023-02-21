@@ -3,22 +3,22 @@ from time import ctime, time
 import argparse
 import jax
 import jax.numpy as jnp
-from load_dataset import load_dataset
+from utils import load_dataset
+from utils import init_UNet
 from train_func import execute_train
 from sample_func import execute_sample
-from init_model import init_UNet
 from flax.training import checkpoints
 from matplotlib import pyplot as plt
 
 parser = argparse.ArgumentParser(description="Train or sample from DDPM")
 
-parser.add_argument('--mode', type=str, choices=['train', 'sample'], required=True)
-parser.add_argument('--dataset', type=str, required=True)
-parser.add_argument('--lr', type=float, required=True)
-parser.add_argument('--batch', type=int, required=True)
-parser.add_argument('--epochs', type=int, required=True)
-parser.add_argument('--random_seed', type=int, required=True)
-parser.add_argument('--checkpoint', type=str, required=True)
+parser.add_argument('--mode', type=str, choices=['train', 'sample'], required=True, help='Required')
+parser.add_argument('--dataset', type=str, required=True, help='Required')
+parser.add_argument('--lr', type=float, required=True, help='Required')
+parser.add_argument('--batch', type=int, required=True, help='Required')
+parser.add_argument('--epochs', type=int, required=True, help='Required')
+parser.add_argument('--random_seed', type=int, required=True, help='Required')
+parser.add_argument('--checkpoint', type=str, required=True, help='Required')
 
 parser.add_argument('--save_period', type=int, default=100)
 parser.add_argument('--train_further', action='store_true')
@@ -28,11 +28,11 @@ parser.add_argument('--time_steps', type=int, default=1000)
 parser.add_argument('--beta_0', type=float, default=0.0001)
 parser.add_argument('--beta_T', type=float, default=0.02)
 
-parser.add_argument('--ch', type=int, default=32)
+parser.add_argument('--ch', type=int, default=128)
 parser.add_argument('--groups', type=int, default=8)
-parser.add_argument('--scale', type=int, default=[1, 2, 4, 8], nargs="+")
+parser.add_argument('--scale', type=int, default=[1, 2, 2, 2], nargs="+")
 parser.add_argument('--add_attn', type=int, default=[2,], nargs="+")
-parser.add_argument('--dropout_rate', type=float, default=0.5)
+parser.add_argument('--dropout_rate', type=float, default=0.1)
 
 args = parser.parse_args()
 

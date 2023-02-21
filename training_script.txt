@@ -1,0 +1,8 @@
+python ddpm.py --mode train --dataset mnist --lr 2e-4 --batch 128 --epochs 4 --random_seed 230221 --checkpoint save/mnist --save_period 2 --ch 32 --scale 1 2 4 8
+python ddpm.py --mode train --dataset mnist --lr 2e-4 --batch 128 --epochs 6 --random_seed 230221 --checkpoint save/mnist_2 --save_period 2 --ch 32 --scale 1 2 4 8 --old_checkpoint save/mnist --train_further
+python ddpm.py --mode train --dataset mnist --lr 2e-4 --batch 128 --epochs 3 --random_seed 230221 --checkpoint save/mnist_3 --save_period 2 --ch 32 --scale 1 2 4 8 --old_checkpoint save/mnist_2 --train_further
+python ddpm.py --mode sample --dataset mnist --lr 2e-4 --batch 128 --epochs 6 --random_seed 230221 --checkpoint save/mnist_3 --ch 32 --scale 1 2 4 8
+
+python ddpm.py --mode train --dataset cifar10 --lr 2e-4 --batch 128 --epochs 4 --random_seed 230221 --checkpoint save/cifar10 --save_period 2
+python ddpm.py --mode train --dataset cifar10 --lr 2e-4 --batch 128 --epochs 2 --random_seed 230221 --checkpoint save/cifar10_2 --save_period 2 --old_checkpoint save/cifar10 --train_further
+python ddpm.py --mode sample --dataset cifar10 --lr 2e-4 --batch 128 --epochs 6 --random_seed 230221 --checkpoint save/cifar10_2
