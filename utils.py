@@ -29,7 +29,7 @@ def load_dataset(dataset, batch_size, resize, new_dim):
     ds = ds.map(normalize, num_parallel_calls=tf.data.AUTOTUNE)
     if resize:
         ds = ds.map(partial(img_resize, resize=resize, size1=new_dim[0], size2=new_dim[1]), num_parallel_calls=tf.data.AUTOTUNE)
-    ds = tfds.as_numpy(ds.shuffle(20000).batch(batch_size).prefetch(tf.data.AUTOTUNE))
+    ds = tfds.as_numpy(ds.shuffle(60000).batch(batch_size).prefetch(tf.data.AUTOTUNE))
     return ds
 
 def init_UNet(new_dim, model_args, lr, key):
