@@ -40,6 +40,7 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period):
             t = jax.random.randint(another_key, shape=(x_0.shape[0],), minval=0, maxval=time_steps)
             x_t, eps = forward_process(x_0, t, beta, key)
             loss, state = train(state, x_t, t, eps)
+
             loss_per_epoch.append(loss)
         
         print(f"Loss after {epoch} epoch(s): ", np.mean(loss_per_epoch))

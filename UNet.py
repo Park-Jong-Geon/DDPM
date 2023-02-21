@@ -87,8 +87,8 @@ class UNet(nn.Module):
         # print(f"Feature dimension at 'middle' part: {ft.shape}")
         
         # Upsampling
-        reversed_scale = list(reversed(self.scale))
-        for i, scale in enumerate(self.scale):
+        for i, scale in enumerate(reversed(self.scale)):
+            assert residual[-1].shape[0:3] == ft.shape[0:3]
             ft = jnp.concatenate([residual.pop(), ft], 3)
             ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
             

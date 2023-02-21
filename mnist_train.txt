@@ -1,0 +1,28 @@
+Wed Feb 22 03:19:38 2023
+dataset=mnist lr=0.0002 batch_size=128 epochs=20
+checkpoint=save/mnist
+train_further=False old_checkpoint=None
+Beta scheduling : time_steps=1000 beta_0=0.0001 beta_T=0.02
+U-Net Parameters : ch=32 groups=8 scale=(1, 2, 4, 8) add_attn=(2,) dropout_rate=0.1
+Loaded mnist dataset
+Epoch: 1
+Loss after 1 epoch(s):  0.15319933
+Epoch: 2
+Loss after 2 epoch(s):  0.041216668
+Epoch: 3
+Loss after 3 epoch(s):  0.032493256
+Epoch: 4
+Loss after 4 epoch(s):  0.02915461
+Epoch: 5
+Loss after 5 epoch(s):  0.026902221
+Epoch: 6
+Loss after 6 epoch(s):  0.024955573
+Epoch: 7
+Loss after 7 epoch(s):  0.023659617
+Epoch: 8
+Loss after 8 epoch(s):  0.02238338
+Epoch: 9
+Loss after 9 epoch(s):  0.022063233
+Epoch: 10
+Loss after 10 epoch(s):  0.02092821
+Epoch: 11
