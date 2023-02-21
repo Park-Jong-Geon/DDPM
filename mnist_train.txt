@@ -26,3 +26,25 @@ Loss after 9 epoch(s):  0.022063233
 Epoch: 10
 Loss after 10 epoch(s):  0.02092821
 Epoch: 11
+Loss after 11 epoch(s):  0.020633109
+Epoch: 12
+Loss after 12 epoch(s):  0.019917801
+Epoch: 13
+Loss after 13 epoch(s):  0.01952683
+Epoch: 14
+Loss after 14 epoch(s):  0.01896597
+Epoch: 15
+Loss after 15 epoch(s):  0.018980244
+Epoch: 16
+Loss after 16 epoch(s):  0.018642707
+Epoch: 17
+Loss after 17 epoch(s):  0.018227972
+Epoch: 18
+Loss after 18 epoch(s):  0.018128626
+Epoch: 19
+Loss after 19 epoch(s):  0.017947048
+Epoch: 20
+Loss after 20 epoch(s):  0.017709894
+Checkpoint saved after 20 epochs at save/mnist
+Finished training after 20 epochs
+

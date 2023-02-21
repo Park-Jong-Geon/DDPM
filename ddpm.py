@@ -1,4 +1,5 @@
 import os
+from glob import glob
 from time import ctime, time
 import argparse
 import jax
@@ -15,14 +16,16 @@ parser = argparse.ArgumentParser(description="Train or sample from DDPM")
 parser.add_argument('--mode', type=str, choices=['train', 'sample'], required=True, help='Required')
 parser.add_argument('--dataset', type=str, required=True, help='Required')
 parser.add_argument('--lr', type=float, required=True, help='Required')
-parser.add_argument('--batch', type=int, required=True, help='Required')
-parser.add_argument('--epochs', type=int, required=True, help='Required')
+parser.add_argument('--batch', type=int, help='Required in train mode')
+parser.add_argument('--epochs', type=int, help='Required in train mode')
 parser.add_argument('--random_seed', type=int, required=True, help='Required')
 parser.add_argument('--checkpoint', type=str, required=True, help='Required')
 
 parser.add_argument('--save_period', type=int, default=100)
 parser.add_argument('--train_further', action='store_true')
 parser.add_argument('--old_checkpoint', type=str, default=None)
+
+parser.add_argument('--sample_dir', type=str, default=None)
 
 parser.add_argument('--time_steps', type=int, default=1000)
 parser.add_argument('--beta_0', type=float, default=0.0001)
@@ -38,7 +41,7 @@ args = parser.parse_args()
 
 dataset_info = {
     'cifar10': [[32, 32, 3], [32, 32, 3], False],
-    'mnist': [[28, 28, 1], [32, 32, 1], True]
+    'mnist': [[28, 28, 1], [64, 64, 1], True]
 }
 data_dim, new_dim, resize = dataset_info[args.dataset]
 
@@ -54,7 +57,7 @@ state = init_UNet(new_dim, model_args, args.lr, key)
 
 # Train
 if args.mode == 'train':
-    os.makedirs(args.checkpoint, exist_ok=True)
+    os.makedirs(args.checkpoint, exist_ok=False)
 
     # Print initial training settings
     print(ctime(time()))
@@ -77,9 +80,7 @@ if args.mode == 'train':
 
 # Sample
 else:
-    # Sample
-    SAMPLE_DIR = f"{args.checkpoint}_gen"
-    os.makedirs(SAMPLE_DIR, exist_ok=True)
+    os.makedirs(args.sample_dir, exist_ok=False)
 
     restored_state = checkpoints.restore_checkpoint(ckpt_dir=args.checkpoint, target=state)
     print(f"Loaded trained model from {args.checkpoint}")
@@ -89,8 +90,8 @@ else:
     for t in range(args.time_steps):
         if t % 100 == 0:
             plt.imshow(backward_img[t], cmap='gray')
-            plt.savefig(f"{SAMPLE_DIR}/step_{t}.png")
+            plt.savefig(f"{args.sample_dir}/step_{t}.png")
 
     assert t == args.time_steps - 1
     plt.imshow(backward_img[t], cmap='gray')
-    plt.savefig(f"{SAMPLE_DIR}/step_{t}.png")
+    plt.savefig(f"{args.sample_dir}/step_{t}.png")
