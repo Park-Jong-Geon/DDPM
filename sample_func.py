@@ -21,6 +21,10 @@ def backward_process(x_t, t, eps_theta, beta, key):
 def apply_trained_model(trained_state, x_t, t):
     return trained_state.apply_fn({'params': trained_state.params}, x_t, jnp.array([t,]))
 
+@jax.jit
+def img_rescale(image):
+    return (jnp.clip(image, a_min=-1, a_max=1) + 1) / 2
+
 def execute_sample(trained_state, beta, new_dim, key, resize, data_dim):
     eps = jax.random.normal(key, (1, new_dim[0], new_dim[1], new_dim[2]))
     backward_img = [eps]
@@ -35,7 +39,7 @@ def execute_sample(trained_state, beta, new_dim, key, resize, data_dim):
         backward_img.append(x_t_1)
     
     backward_img = list(map(jnp.squeeze, backward_img))
-    backward_img = list(map(partial(jnp.clip, a_min=0, a_max=1), backward_img))
+    backward_img = list(map(img_rescale, backward_img))
     if resize:
         backward_img = list(map(partial(jax.image.resize, shape=(data_dim[0], data_dim[1]), method='nearest'), backward_img))
     return backward_img
