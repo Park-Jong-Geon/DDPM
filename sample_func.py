@@ -4,7 +4,7 @@ from tqdm import tqdm
 from utils import calculate_necessary_values
 from functools import partial
 
-#@jax.jit
+@jax.jit
 def backward_process(x_t, t, eps_theta, beta, z):
     assert x_t.shape == eps_theta.shape
 
@@ -68,10 +68,8 @@ def execute_sample(batch, trained_state, beta, new_dim, key, resize, data_dim):
         x_t_1 = backward_process(x_t, vec_t, eps_theta, beta, z)
 
         x_t = x_t_1
-        print(f"x_t at step {t} : {x_t}")
     
     samples = jax.lax.map(img_rescale, x_t)
-    print(f"samples type : {type(samples)}")
     if resize:
         samples = jax.lax.map(partial(jax.image.resize, shape=data_dim, method='nearest'), samples)
     return samples

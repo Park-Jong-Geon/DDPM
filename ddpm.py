@@ -36,6 +36,7 @@ parser.add_argument('--groups', type=int, default=8)
 parser.add_argument('--scale', type=int, default=[1, 2, 2, 2], nargs="+")
 parser.add_argument('--add_attn', type=int, default=[2,], nargs="+")
 parser.add_argument('--dropout_rate', type=float, default=0.1)
+parser.add_argument('--num_heads', type=int, default=8)
 
 args = parser.parse_args()
 
@@ -53,7 +54,7 @@ key = jax.random.PRNGKey(args.random_seed)
 beta = jnp.linspace(args.beta_0, args.beta_T, args.time_steps)
 
 # Initialize the model
-model_args = [args.ch, args.groups, tuple(args.scale), tuple(args.add_attn), args.dropout_rate]
+model_args = [args.ch, args.groups, tuple(args.scale), tuple(args.add_attn), args.dropout_rate, args.num_heads]
 state = init_UNet(new_dim, model_args, args.lr, key)
 
 # Train
@@ -91,8 +92,6 @@ else:
     assert(args.sample_num == jnp.size(samples, axis=0))
     for i in range(args.sample_num):
         if data_dim[2] == 1:
-            if i == args.sample_num-1:
-                print(jnp.take(samples, i, axis=0))
             plt.imshow(jnp.take(samples, i, axis=0), cmap='gray')
             plt.savefig(f"{args.sample_dir}/seed{args.random_seed}_img{i}.png")
         else:

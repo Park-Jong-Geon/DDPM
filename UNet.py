@@ -48,6 +48,7 @@ class UNet(nn.Module):
     scale: tuple
     add_attn: tuple
     dropout_rate: float
+    num_heads: int
     
     @nn.compact
     def __call__(self, x, t):        
@@ -67,7 +68,7 @@ class UNet(nn.Module):
             ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
             
             if i+1 in self.add_attn:
-                attn = nn.SelfAttention(num_heads=8, kernel_init=init.xavier_normal(), bias_init=init.zeros_init())(ft, deterministic=True)
+                attn = nn.SelfAttention(num_heads=self.num_heads, kernel_init=init.xavier_normal(), bias_init=init.zeros_init())(ft, deterministic=True)
                 assert ft.shape == attn.shape
                 ft += nn.GroupNorm(num_groups=self.groups)(attn)
             
@@ -80,7 +81,7 @@ class UNet(nn.Module):
                 
         # Middle
         ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
-        attn = nn.SelfAttention(num_heads=8, kernel_init=init.xavier_normal(), bias_init=init.zeros_init())(ft, deterministic=True)
+        attn = nn.SelfAttention(num_heads=self.num_heads, kernel_init=init.xavier_normal(), bias_init=init.zeros_init())(ft, deterministic=True)
         assert ft.shape == attn.shape
         ft += nn.GroupNorm(num_groups=self.groups)(attn)
         ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
@@ -93,7 +94,7 @@ class UNet(nn.Module):
             ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
             
             if scale_len-i in self.add_attn:
-                attn = nn.SelfAttention(num_heads=8, kernel_init=init.xavier_normal(), bias_init=init.zeros_init())(ft, deterministic=True)
+                attn = nn.SelfAttention(num_heads=self.num_heads, kernel_init=init.xavier_normal(), bias_init=init.zeros_init())(ft, deterministic=True)
                 assert ft.shape == attn.shape
                 ft += nn.GroupNorm(num_groups=self.groups)(attn)
             
