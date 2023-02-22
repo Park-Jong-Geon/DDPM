@@ -5,7 +5,7 @@ from utils import calculate_necessary_values
 from functools import partial
 
 @jax.jit
-def backward_process(x_t, t, eps_theta, beta, key):
+def backward_process(x_t, t, eps_theta, beta, z):
     assert x_t.shape == eps_theta.shape
 
     alpha_, sqrt_alpha_, sqrt_1_alpha_ = calculate_necessary_values(beta)
@@ -13,8 +13,7 @@ def backward_process(x_t, t, eps_theta, beta, key):
     coef = beta_t / jnp.take(sqrt_1_alpha_, t) ** 0.5
 
     mean = 1 / (1 - beta_t) ** 0.5 * (x_t - coef * eps_theta)
-    z = jax.random.normal(key=key, shape=(x_t.shape))
-
+    
     return mean + beta_t ** 0.5 * z
 
 @jax.jit
@@ -35,7 +34,12 @@ def execute_sample(trained_state, beta, new_dim, key, resize, data_dim):
         eps_theta = apply_trained_model(trained_state, x_t, t)
         dummy_key, key = jax.random.split(key)
         
-        x_t_1 = backward_process(x_t, t, eps_theta, beta, key)
+        if t != 0:
+            z = jax.random.normal(key=key, shape=x_t.shape)
+        else:
+            z = jnp.zeros(shape=x_t.shape)
+        x_t_1 = backward_process(x_t, t, eps_theta, beta, z)
+
         backward_img.append(x_t_1)
     
     backward_img = list(map(jnp.squeeze, backward_img))
