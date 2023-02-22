@@ -1,5 +1,4 @@
 import os
-from glob import glob
 from time import ctime, time
 import argparse
 import jax
@@ -40,8 +39,8 @@ parser.add_argument('--dropout_rate', type=float, default=0.1)
 args = parser.parse_args()
 
 dataset_info = {
-    'cifar10': [[32, 32, 3], [64, 64, 3], True],
-    'mnist': [[28, 28, 1], [64, 64, 1], True]
+    'cifar10': [[32, 32, 3], [32, 32, 3], False],
+    'mnist': [[28, 28, 1], [32, 32, 1], True]
 }
 data_dim, new_dim, resize = dataset_info[args.dataset]
 
