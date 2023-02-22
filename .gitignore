@@ -1,5 +1,2 @@
-save/*
+*train.txt
 __pycache__/*
-remake/*
-recover/*
-backup/*
