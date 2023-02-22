@@ -48,3 +48,386 @@ Loss after 20 epoch(s):  0.017709894
 Checkpoint saved after 20 epochs at save/mnist
 Finished training after 20 epochs
 
+Wed Feb 22 11:34:40 2023
+dataset=mnist lr=0.0002 batch_size=64 epochs=100
+checkpoint=save/mnist_sizeup
+train_further=False old_checkpoint=None
+Beta scheduling : time_steps=1000 beta_0=0.0001 beta_T=0.02
+U-Net Parameters : ch=32 groups=8 scale=(1, 2, 4, 8) add_attn=(2,) dropout_rate=0.1
+Downloading and preparing dataset 11.06 MiB (download: 11.06 MiB, generated: 21.00 MiB, total: 32.06 MiB) to /home/panyaang99/tensorflow_datasets/mnist/3.0.1...
+Dataset mnist downloaded and prepared to /home/panyaang99/tensorflow_datasets/mnist/3.0.1. Subsequent calls will reuse this data.
+Loaded mnist dataset
+Epoch: 1
+Wed Feb 22 11:39:48 2023
+dataset=mnist lr=0.0002 batch_size=256 epochs=100
+checkpoint=save/mnist_sizeup
+train_further=False old_checkpoint=None
+Beta scheduling : time_steps=1000 beta_0=0.0001 beta_T=0.02
+U-Net Parameters : ch=64 groups=8 scale=(1, 2, 4, 8) add_attn=(2,) dropout_rate=0.1
+Loaded mnist dataset
+Epoch: 1
+Wed Feb 22 11:45:22 2023
+dataset=mnist lr=0.0002 batch_size=128 epochs=100
+checkpoint=save/mnist_sizeup
+train_further=False old_checkpoint=None
+Beta scheduling : time_steps=1000 beta_0=0.0001 beta_T=0.02
+U-Net Parameters : ch=64 groups=8 scale=(1, 2, 4, 8) add_attn=(2,) dropout_rate=0.1
+Loaded mnist dataset
+Epoch: 1
+Loss after 1 epoch(s):  0.9953557
+Epoch: 2
+Loss after 2 epoch(s):  0.353853
+Epoch: 3
+Wed Feb 22 11:59:12 2023
+dataset=mnist lr=0.0002 batch_size=128 epochs=100
+checkpoint=save/mnist
+train_further=False old_checkpoint=None
+Beta scheduling : time_steps=1000 beta_0=0.0001 beta_T=0.02
+U-Net Parameters : ch=32 groups=8 scale=(1, 2, 4, 8) add_attn=(2,) dropout_rate=0.1
+Loaded mnist dataset
+Epoch: 1
+Loss after 1 epoch(s):  0.15940979
+Epoch: 2
+Loss after 2 epoch(s):  0.041831035
+Epoch: 3
+Loss after 3 epoch(s):  0.03279548
+Epoch: 4
+Loss after 4 epoch(s):  0.029253274
+Epoch: 5
+Loss after 5 epoch(s):  0.02664526
+Epoch: 6
+Loss after 6 epoch(s):  0.024703033
+Epoch: 7
+Loss after 7 epoch(s):  0.023513192
+Epoch: 8
+Loss after 8 epoch(s):  0.022223635
+Epoch: 9
+Loss after 9 epoch(s):  0.02182241
+Epoch: 10
+Loss after 10 epoch(s):  0.020840287
+Epoch: 11
+Loss after 11 epoch(s):  0.020435898
+Epoch: 12
+Loss after 12 epoch(s):  0.019889787
+Epoch: 13
+Loss after 13 epoch(s):  0.01941385
+Epoch: 14
+Loss after 14 epoch(s):  0.018806852
+Epoch: 15
+Loss after 15 epoch(s):  0.018898822
+Epoch: 16
+Loss after 16 epoch(s):  0.018507052
+Epoch: 17
+Loss after 17 epoch(s):  0.018094357
+Epoch: 18
+Loss after 18 epoch(s):  0.018109608
+Epoch: 19
+Loss after 19 epoch(s):  0.017877007
+Epoch: 20
+Loss after 20 epoch(s):  0.017746411
+Checkpoint saved after 20 epochs at save/mnist
+Epoch: 21
+Loss after 21 epoch(s):  0.017514488
+Epoch: 22
+Loss after 22 epoch(s):  0.017455738
+Epoch: 23
+Loss after 23 epoch(s):  0.01718498
+Epoch: 24
+Loss after 24 epoch(s):  0.016965074
+Epoch: 25
+Loss after 25 epoch(s):  0.017117847
+Epoch: 26
+Loss after 26 epoch(s):  0.016910521
+Epoch: 27
+Loss after 27 epoch(s):  0.016764967
+Epoch: 28
+Loss after 28 epoch(s):  0.016984638
+Epoch: 29
+Loss after 29 epoch(s):  0.016447425
+Epoch: 30
+Loss after 30 epoch(s):  0.01657294
+Epoch: 31
+Loss after 31 epoch(s):  0.01647659
+Epoch: 32
+Loss after 32 epoch(s):  0.01646665
+Epoch: 33
+Loss after 33 epoch(s):  0.016455501
+Epoch: 34
+Loss after 34 epoch(s):  0.016282156
+Epoch: 35
+Loss after 35 epoch(s):  0.016190853
+Epoch: 36
+Loss after 36 epoch(s):  0.01620809
+Epoch: 37
+Loss after 37 epoch(s):  0.016198631
+Epoch: 38
+Loss after 38 epoch(s):  0.016052032
+Epoch: 39
+Loss after 39 epoch(s):  0.015942667
+Epoch: 40
+Loss after 40 epoch(s):  0.015868736
+Checkpoint saved after 40 epochs at save/mnist
+Epoch: 41
+Loss after 41 epoch(s):  0.015881384
+Epoch: 42
+Loss after 42 epoch(s):  0.01573061
+Epoch: 43
+Loss after 43 epoch(s):  0.015915876
+Epoch: 44
+Loss after 44 epoch(s):  0.015677748
+Epoch: 45
+Loss after 45 epoch(s):  0.015819151
+Epoch: 46
+Loss after 46 epoch(s):  0.015851099
+Epoch: 47
+Loss after 47 epoch(s):  0.015784195
+Epoch: 48
+Loss after 48 epoch(s):  0.015515673
+Epoch: 49
+Loss after 49 epoch(s):  0.015650958
+Epoch: 50
+Loss after 50 epoch(s):  0.015555118
+Epoch: 51
+Loss after 51 epoch(s):  0.015431193
+Epoch: 52
+Loss after 52 epoch(s):  0.015581751
+Epoch: 53
+Loss after 53 epoch(s):  0.01556624
+Epoch: 54
+Loss after 54 epoch(s):  0.01557732
+Epoch: 55
+Loss after 55 epoch(s):  0.015456538
+Epoch: 56
+Loss after 56 epoch(s):  0.01540919
+Epoch: 57
+Loss after 57 epoch(s):  0.015348196
+Epoch: 58
+Loss after 58 epoch(s):  0.015393533
+Epoch: 59
+Loss after 59 epoch(s):  0.01539108
+Epoch: 60
+Loss after 60 epoch(s):  0.015462492
+Checkpoint saved after 60 epochs at save/mnist
+Epoch: 61
+Loss after 61 epoch(s):  0.015311875
+Epoch: 62
+Loss after 62 epoch(s):  0.01537436
+Epoch: 63
+Loss after 63 epoch(s):  0.015101389
+Epoch: 64
+Loss after 64 epoch(s):  0.0152973775
+Epoch: 65
+Loss after 65 epoch(s):  0.01515241
+Epoch: 66
+Loss after 66 epoch(s):  0.015217375
+Epoch: 67
+Loss after 67 epoch(s):  0.01527747
+Epoch: 68
+Loss after 68 epoch(s):  0.015212825
+Epoch: 69
+Loss after 69 epoch(s):  0.015176522
+Epoch: 70
+Loss after 70 epoch(s):  0.015169686
+Epoch: 71
+Loss after 71 epoch(s):  0.015189865
+Epoch: 72
+Loss after 72 epoch(s):  0.015081576
+Epoch: 73
+Loss after 73 epoch(s):  0.015093735
+Epoch: 74
+Loss after 74 epoch(s):  0.014983785
+Epoch: 75
+Loss after 75 epoch(s):  0.015221592
+Epoch: 76
+Loss after 76 epoch(s):  0.014994703
+Epoch: 77
+Loss after 77 epoch(s):  0.014993727
+Epoch: 78
+Loss after 78 epoch(s):  0.015002667
+Epoch: 79
+Loss after 79 epoch(s):  0.014902013
+Epoch: 80
+Loss after 80 epoch(s):  0.014829707
+Checkpoint saved after 80 epochs at save/mnist
+Epoch: 81
+Loss after 81 epoch(s):  0.015027738
+Epoch: 82
+Loss after 82 epoch(s):  0.01476462
+Epoch: 83
+Loss after 83 epoch(s):  0.014959971
+Epoch: 84
+Loss after 84 epoch(s):  0.015059341
+Epoch: 85
+Loss after 85 epoch(s):  0.014820308
+Epoch: 86
+Loss after 86 epoch(s):  0.014934868
+Epoch: 87
+Loss after 87 epoch(s):  0.015019272
+Epoch: 88
+Loss after 88 epoch(s):  0.014818183
+Epoch: 89
+Loss after 89 epoch(s):  0.014928004
+Epoch: 90
+Loss after 90 epoch(s):  0.014927015
+Epoch: 91
+Loss after 91 epoch(s):  0.014715648
+Epoch: 92
+Loss after 92 epoch(s):  0.014889203
+Epoch: 93
+Loss after 93 epoch(s):  0.014860429
+Epoch: 94
+Loss after 94 epoch(s):  0.01477185
+Epoch: 95
+Loss after 95 epoch(s):  0.014791154
+Epoch: 96
+Loss after 96 epoch(s):  0.014760419
+Epoch: 97
+Loss after 97 epoch(s):  0.014809518
+Epoch: 98
+Loss after 98 epoch(s):  0.014727273
+Epoch: 99
+Loss after 99 epoch(s):  0.014684799
+Epoch: 100
+Loss after 100 epoch(s):  0.014775093
+Checkpoint saved after 100 epochs at save/mnist
+Finished training after 100 epochs
+
+Wed Feb 22 12:59:16 2023
+dataset=mnist lr=0.0002 batch_size=128 epochs=100
+checkpoint=save/mnist_ch128
+train_further=False old_checkpoint=None
+Beta scheduling : time_steps=1000 beta_0=0.0001 beta_T=0.02
+U-Net Parameters : ch=128 groups=8 scale=(1, 2, 2, 2) add_attn=(2,) dropout_rate=0.1
+Loaded mnist dataset
+Epoch: 1
+Loss after 1 epoch(s):  0.21096863
+Epoch: 2
+Loss after 2 epoch(s):  0.031416908
+Epoch: 3
+Loss after 3 epoch(s):  0.026877305
+Epoch: 4
+Loss after 4 epoch(s):  0.024671782
+Epoch: 5
+Loss after 5 epoch(s):  0.02288273
+Epoch: 6
+Loss after 6 epoch(s):  0.021358782
+Epoch: 7
+Loss after 7 epoch(s):  0.020579467
+Epoch: 8
+Loss after 8 epoch(s):  0.019621499
+Epoch: 9
+Loss after 9 epoch(s):  0.01943911
+Epoch: 10
+Loss after 10 epoch(s):  0.018682215
+Epoch: 11
+Loss after 11 epoch(s):  0.018632941
+Epoch: 12
+Loss after 12 epoch(s):  0.018092062
+Epoch: 13
+Loss after 13 epoch(s):  0.01787228
+Epoch: 14
+Loss after 14 epoch(s):  0.017383942
+Epoch: 15
+Loss after 15 epoch(s):  0.01749031
+Epoch: 16
+Loss after 16 epoch(s):  0.017050276
+Epoch: 17
+Loss after 17 epoch(s):  0.0167365
+Epoch: 18
+Loss after 18 epoch(s):  0.016765686
+Epoch: 19
+Loss after 19 epoch(s):  0.016498199
+Epoch: 20
+Loss after 20 epoch(s):  0.016482372
+Checkpoint saved after 20 epochs at save/mnist_ch128
+Epoch: 21
+Loss after 21 epoch(s):  0.016275918
+Epoch: 22
+Loss after 22 epoch(s):  0.016179375
+Epoch: 23
+Loss after 23 epoch(s):  0.016073488
+Epoch: 24
+Loss after 24 epoch(s):  0.015789537
+Epoch: 25
+Loss after 25 epoch(s):  0.015935067
+Epoch: 26
+Loss after 26 epoch(s):  0.015706476
+Epoch: 27
+Loss after 27 epoch(s):  0.015553574
+Epoch: 28
+Loss after 28 epoch(s):  0.01582496
+Epoch: 29
+Loss after 29 epoch(s):  0.015370674
+Epoch: 30
+Loss after 30 epoch(s):  0.015531404
+Epoch: 31
+Loss after 31 epoch(s):  0.015421489
+Epoch: 32
+Loss after 32 epoch(s):  0.0153688695
+Epoch: 33
+Loss after 33 epoch(s):  0.01546124
+Epoch: 34
+Loss after 34 epoch(s):  0.015276297
+Epoch: 35
+Loss after 35 epoch(s):  0.015230908
+Epoch: 36
+Loss after 36 epoch(s):  0.015221179
+Epoch: 37
+Loss after 37 epoch(s):  0.015242147
+Epoch: 38
+Loss after 38 epoch(s):  0.015047708
+Epoch: 39
+Loss after 39 epoch(s):  0.014962676
+Epoch: 40
+Loss after 40 epoch(s):  0.014998732
+Checkpoint saved after 40 epochs at save/mnist_ch128
+Epoch: 41
+Loss after 41 epoch(s):  0.014933428
+Epoch: 42
+Loss after 42 epoch(s):  0.014766445
+Epoch: 43
+Loss after 43 epoch(s):  0.0150357615
+Epoch: 44
+Loss after 44 epoch(s):  0.014848477
+Epoch: 45
+Loss after 45 epoch(s):  0.014950374
+Epoch: 46
+Loss after 46 epoch(s):  0.014972199
+Epoch: 47
+Loss after 47 epoch(s):  0.014869796
+Epoch: 48
+Loss after 48 epoch(s):  0.014635026
+Epoch: 49
+Loss after 49 epoch(s):  0.0147328945
+Epoch: 50
+Loss after 50 epoch(s):  0.014684225
+Epoch: 51
+Loss after 51 epoch(s):  0.014557366
+Epoch: 52
+Loss after 52 epoch(s):  0.014668703
+Epoch: 53
+Loss after 53 epoch(s):  0.01475005
+Epoch: 54
+Loss after 54 epoch(s):  0.014683645
+Epoch: 55
+Loss after 55 epoch(s):  0.014667851
+Epoch: 56
+Loss after 56 epoch(s):  0.014597697
+Epoch: 57
+Loss after 57 epoch(s):  0.014580982
+Epoch: 58
+Loss after 58 epoch(s):  0.014573962
+Epoch: 59
+Loss after 59 epoch(s):  0.014615748
+Epoch: 60
+Loss after 60 epoch(s):  0.014637673
+Checkpoint saved after 60 epochs at save/mnist_ch128
+Epoch: 61
+Loss after 61 epoch(s):  0.014486017
+Epoch: 62
+Loss after 62 epoch(s):  0.014592675
+Epoch: 63
+Loss after 63 epoch(s):  0.014344802
+Epoch: 64
+Loss after 64 epoch(s):  0.014530872
+Epoch: 65

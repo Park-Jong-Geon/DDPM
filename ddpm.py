@@ -13,6 +13,7 @@ from matplotlib import pyplot as plt
 parser = argparse.ArgumentParser(description="Train or sample from DDPM")
 
 parser.add_argument('--mode', type=str, choices=['train', 'sample'], required=True, help='Required')
+parser.add_argument('--sample_num', type=int, default=256)
 parser.add_argument('--dataset', type=str, required=True, help='Required')
 parser.add_argument('--lr', type=float, required=True, help='Required')
 parser.add_argument('--batch', type=int, help='Required in train mode')
@@ -84,13 +85,18 @@ else:
     restored_state = checkpoints.restore_checkpoint(ckpt_dir=args.checkpoint, target=state)
     print(f"Loaded trained model from {args.checkpoint}")
 
-    backward_img = execute_sample(restored_state, beta, new_dim, key, resize, data_dim)
+    samples = execute_sample(args.sample_num, restored_state, beta, new_dim, key, resize, data_dim)
 
+    assert(args.sample_num == jnp.size(samples, axis=0))
+    for i in range(args.sample_num):
+        plt.savefig(f"{args.sample_dir}/key{key}_img{i}")
+
+'''
     for t in range(args.time_steps):
         if t % 100 == 0:
-            plt.imshow(backward_img[t], cmap='gray')
             plt.savefig(f"{args.sample_dir}/step_{t}.png")
 
     assert t == args.time_steps - 1
     plt.imshow(backward_img[t], cmap='gray')
     plt.savefig(f"{args.sample_dir}/step_{t}.png")
+'''
