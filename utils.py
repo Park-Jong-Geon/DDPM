@@ -33,7 +33,7 @@ def load_dataset(dataset, batch_size, resize, new_dim):
     return ds
 
 def init_UNet(new_dim, model_args, lr, key):
-    dummy_x = jnp.ones(shape=(1, new_dim[0], new_dim[1], new_dim[2]))
+    dummy_x = jnp.ones(shape=(1, *new_dim))
     dummy_t = jnp.ones(shape=(1, ))
     
     model = UNet(*model_args)

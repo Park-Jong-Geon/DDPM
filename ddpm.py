@@ -44,6 +44,7 @@ dataset_info = {
     'mnist': [[28, 28, 1], [32, 32, 1], True]
 }
 data_dim, new_dim, resize = dataset_info[args.dataset]
+assert data_dim[2] == 1 or data_dim[2] == 3
 
 # Random seeds
 key = jax.random.PRNGKey(args.random_seed)
@@ -84,16 +85,23 @@ else:
 
     restored_state = checkpoints.restore_checkpoint(ckpt_dir=args.checkpoint, target=state)
     print(f"Loaded trained model from {args.checkpoint}")
-
+    
     samples = execute_sample(args.sample_num, restored_state, beta, new_dim, key, resize, data_dim)
 
     assert(args.sample_num == jnp.size(samples, axis=0))
     for i in range(args.sample_num):
-        plt.savefig(f"{args.sample_dir}/key{key}_img{i}")
+        if data_dim[2] == 1:
+            if i == args.sample_num-1:
+                print(jnp.take(samples, i, axis=0))
+            plt.imshow(jnp.take(samples, i, axis=0), cmap='gray')
+            plt.savefig(f"{args.sample_dir}/seed{args.random_seed}_img{i}.png")
+        else:
+            plt.imsave(f"{args.sample_dir}/seed{args.random_seed}_img{i}.png", jnp.take(samples, i, axis=0), cmap='gray')
 
 '''
     for t in range(args.time_steps):
         if t % 100 == 0:
+            plt.imshow(backward_img[t], cmap='gray')
             plt.savefig(f"{args.sample_dir}/step_{t}.png")
 
     assert t == args.time_steps - 1

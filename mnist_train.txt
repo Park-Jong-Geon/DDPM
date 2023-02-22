@@ -431,3 +431,78 @@ Loss after 63 epoch(s):  0.014344802
 Epoch: 64
 Loss after 64 epoch(s):  0.014530872
 Epoch: 65
+Loss after 65 epoch(s):  0.014379263
+Epoch: 66
+Loss after 66 epoch(s):  0.014394506
+Epoch: 67
+Loss after 67 epoch(s):  0.014488728
+Epoch: 68
+Loss after 68 epoch(s):  0.014400313
+Epoch: 69
+Loss after 69 epoch(s):  0.0144147845
+Epoch: 70
+Loss after 70 epoch(s):  0.014363971
+Epoch: 71
+Loss after 71 epoch(s):  0.014402096
+Epoch: 72
+Loss after 72 epoch(s):  0.014328937
+Epoch: 73
+Loss after 73 epoch(s):  0.014369942
+Epoch: 74
+Loss after 74 epoch(s):  0.014316523
+Epoch: 75
+Loss after 75 epoch(s):  0.014416879
+Epoch: 76
+Loss after 76 epoch(s):  0.014267925
+Epoch: 77
+Loss after 77 epoch(s):  0.014294045
+Epoch: 78
+Loss after 78 epoch(s):  0.014269347
+Epoch: 79
+Loss after 79 epoch(s):  0.014218528
+Epoch: 80
+Loss after 80 epoch(s):  0.014141525
+Checkpoint saved after 80 epochs at save/mnist_ch128
+Epoch: 81
+Loss after 81 epoch(s):  0.014300229
+Epoch: 82
+Loss after 82 epoch(s):  0.014066778
+Epoch: 83
+Loss after 83 epoch(s):  0.014240319
+Epoch: 84
+Loss after 84 epoch(s):  0.014324542
+Epoch: 85
+Loss after 85 epoch(s):  0.014134245
+Epoch: 86
+Loss after 86 epoch(s):  0.014250512
+Epoch: 87
+Loss after 87 epoch(s):  0.01425722
+Epoch: 88
+Loss after 88 epoch(s):  0.014176811
+Epoch: 89
+Loss after 89 epoch(s):  0.014193613
+Epoch: 90
+Loss after 90 epoch(s):  0.014215522
+Epoch: 91
+Loss after 91 epoch(s):  0.014093807
+Epoch: 92
+Loss after 92 epoch(s):  0.014165843
+Epoch: 93
+Loss after 93 epoch(s):  0.014183824
+Epoch: 94
+Loss after 94 epoch(s):  0.014155076
+Epoch: 95
+Loss after 95 epoch(s):  0.014174691
+Epoch: 96
+Loss after 96 epoch(s):  0.014131366
+Epoch: 97
+Loss after 97 epoch(s):  0.014173905
+Epoch: 98
+Loss after 98 epoch(s):  0.01407311
+Epoch: 99
+Loss after 99 epoch(s):  0.014009378
+Epoch: 100
+Loss after 100 epoch(s):  0.014129717
+Checkpoint saved after 100 epochs at save/mnist_ch128
+Finished training after 100 epochs
+
