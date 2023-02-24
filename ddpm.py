@@ -59,7 +59,7 @@ state = init_UNet(new_dim, model_args, args.lr, key)
 
 # Train
 if args.mode == 'train':
-    os.makedirs(args.checkpoint, exist_ok=False)
+    os.makedirs(args.checkpoint, exist_ok=True)
 
     # Print initial training settings
     print(ctime(time()))
@@ -67,7 +67,7 @@ if args.mode == 'train':
     print(f"checkpoint={args.checkpoint}")
     print(f"train_further={args.train_further} old_checkpoint={args.old_checkpoint}")
     print(f"Beta scheduling : time_steps={args.time_steps} beta_0={args.beta_0} beta_T={args.beta_T}")
-    print(f"U-Net Parameters : ch={args.ch} groups={args.groups} scale={tuple(args.scale)} add_attn={tuple(args.add_attn)} dropout_rate={args.dropout_rate}")
+    print(f"U-Net Parameters : ch={args.ch} groups={args.groups} scale={tuple(args.scale)} add_attn={tuple(args.add_attn)} dropout_rate={args.dropout_rate} num_heads={args.num_heads}")
 
     # Load dataset
     ds = load_dataset(args.dataset, args.batch, resize, new_dim)
@@ -82,7 +82,7 @@ if args.mode == 'train':
 
 # Sample
 else:
-    os.makedirs(args.sample_dir, exist_ok=False)
+    os.makedirs(args.sample_dir, exist_ok=True)
 
     restored_state = checkpoints.restore_checkpoint(ckpt_dir=args.checkpoint, target=state)
     print(f"Loaded trained model from {args.checkpoint}")

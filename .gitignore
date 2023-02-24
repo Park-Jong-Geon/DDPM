@@ -2,3 +2,6 @@
 __pycache__/*
 save/*
 debug.txt
+cifar10_png*
+cifar-10-python.tar.gz
+*checkpoint*
