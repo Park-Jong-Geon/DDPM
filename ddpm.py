@@ -21,7 +21,7 @@ parser.add_argument('--epochs', type=int, help='Required in train mode')
 parser.add_argument('--random_seed', type=int, required=True, help='Required')
 parser.add_argument('--checkpoint', type=str, required=True, help='Required')
 
-parser.add_argument('--save_period', type=int, default=100000)
+parser.add_argument('--save_period', type=int, default=10000)
 parser.add_argument('--train_further', action='store_true')
 parser.add_argument('--old_checkpoint', type=str, default=None)
 
