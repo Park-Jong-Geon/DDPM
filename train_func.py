@@ -49,13 +49,13 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period):
                 checkpoints.save_checkpoint(ckpt_dir=ckpt, target=state, step=state.step, keep=1e+8)
                 print(f"Checkpoint saved after {state.step} steps at {ckpt}")
 
-        print(f"Loss after {epoch} epoch(s) or {state.step} steps: ", np.mean(loss_per_epoch))
+        print(f"Loss after {epoch} epoch(s) or {state.step} steps: {np.mean(loss_per_epoch)}", flush=True)
     
     if state.step % save_period != 0:
         assert len(os.listdir(ckpt)) < 1e+8
         checkpoints.save_checkpoint(ckpt_dir=ckpt, target=state, step=state.step, keep=1e+8)
-        print(f"Checkpoint saved after {state.step} steps at {ckpt}")
+        print(f"Checkpoint saved after {state.step} steps at {ckpt}", flush=True)
 
-    print(f"Finished training after {epoch} epochs or {state.step} steps")
+    print(f"Finished training after {epoch} epochs or {state.step} steps", flush=True)
 
     return state

@@ -62,14 +62,14 @@ if args.mode == 'train':
     os.makedirs(args.checkpoint, exist_ok=True)
 
     # Print initial training settings
-    print(ctime(time()))
-    print(f"dataset={args.dataset} lr={args.lr} batch_size={args.batch} epochs={args.epochs}")
-    print(f"checkpoint={args.checkpoint}")
-    print(f"train_further={args.train_further} old_checkpoint={args.old_checkpoint}")
-    print(f"Beta scheduling : time_steps={args.time_steps} beta_0={args.beta_0} beta_T={args.beta_T}")
-    print(f"U-Net Parameters : ch={args.ch} groups={args.groups} scale={tuple(args.scale)} add_attn={tuple(args.add_attn)} dropout_rate={args.dropout_rate} num_heads={args.num_heads}")
-    print(f"Random seed : {args.random_seed}")
-    print(f"Save path : {args.checkpoint}")
+    print(ctime(time()), flush=True)
+    print(f"dataset={args.dataset} lr={args.lr} batch_size={args.batch} epochs={args.epochs}", flush=True)
+    print(f"checkpoint={args.checkpoint}", flush=True)
+    print(f"train_further={args.train_further} old_checkpoint={args.old_checkpoint}", flush=True)
+    print(f"Beta scheduling : time_steps={args.time_steps} beta_0={args.beta_0} beta_T={args.beta_T}", flush=True)
+    print(f"U-Net Parameters : ch={args.ch} groups={args.groups} scale={tuple(args.scale)} add_attn={tuple(args.add_attn)} dropout_rate={args.dropout_rate} num_heads={args.num_heads}", flush=True)
+    print(f"Random seed : {args.random_seed}", flush=True)
+    print(f"Save path : {args.checkpoint}", flush=True)
 
     # Load dataset
     ds = load_dataset(args.dataset, args.batch, resize, new_dim)
@@ -77,7 +77,7 @@ if args.mode == 'train':
     # Train
     if args.train_further:
         state = checkpoints.restore_checkpoint(ckpt_dir=args.old_checkpoint, target=state)
-        print(f"Checkpoint restored from {args.old_checkpoint}")
+        print(f"Checkpoint restored from {args.old_checkpoint}", flush=True)
     state = execute_train(args.epochs, ds, state, beta, key, args.checkpoint, args.save_period)
 
     print("")
@@ -87,7 +87,7 @@ else:
     os.makedirs(args.sample_dir, exist_ok=True)
 
     restored_state = checkpoints.restore_checkpoint(ckpt_dir=args.checkpoint, target=state)
-    print(f"Loaded trained model from {args.checkpoint}")
+    print(f"Loaded trained model from {args.checkpoint}", flush=True)
     
     samples = execute_sample(args.sample_num, restored_state, beta, new_dim, key, resize, data_dim)
 
