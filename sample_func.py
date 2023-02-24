@@ -27,6 +27,7 @@ def apply_trained_model(trained_state, x_t, t):
 def img_rescale(image):
     return (jnp.clip(image, a_min=-1, a_max=1) + 1) / 2
 
+'''
 def execute_single_sample_at_all_steps(trained_state, beta, new_dim, key, resize, data_dim):
     eps = jax.random.normal(key, (1, *new_dim))
     backward_img = [eps]
@@ -51,12 +52,13 @@ def execute_single_sample_at_all_steps(trained_state, beta, new_dim, key, resize
     if resize:
         backward_img = list(map(partial(jax.image.resize, shape=data_dim, method='nearest'), backward_img))
     return backward_img
+'''
 
 def execute_sample(batch, trained_state, beta, new_dim, key, resize, data_dim):
     eps = jax.random.normal(key, (batch, *new_dim))
     x_t = eps
     time_steps = jnp.size(beta, axis=0)
-    for t in tqdm(reversed(range(0, time_steps))):
+    for t in (pbar := tqdm(reversed(range(0, time_steps)))):
         vec_t = jnp.ones(shape=(batch,), dtype=int) * t
         eps_theta = apply_trained_model(trained_state, x_t, vec_t)
         
@@ -68,6 +70,8 @@ def execute_sample(batch, trained_state, beta, new_dim, key, resize, data_dim):
         x_t_1 = backward_process(x_t, vec_t, eps_theta, beta, z)
 
         x_t = x_t_1
+
+        pbar.set_description("Sampling")
     
     samples = jax.lax.map(img_rescale, x_t)
     if resize:

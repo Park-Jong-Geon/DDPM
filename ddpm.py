@@ -57,11 +57,8 @@ beta = jnp.linspace(args.beta_0, args.beta_T, args.time_steps)
 model_args = [args.ch, args.groups, tuple(args.scale), tuple(args.add_attn), args.dropout_rate, args.num_heads]
 state = init_UNet(new_dim, model_args, args.lr, key)
 
-# Train
-if args.mode == 'train':
-    os.makedirs(args.checkpoint, exist_ok=True)
-
-    # Print initial training settings
+# Print initial training settings
+def print_settings(args):
     print(ctime(time()), flush=True)
     print(f"dataset={args.dataset} lr={args.lr} batch_size={args.batch} epochs={args.epochs}", flush=True)
     print(f"checkpoint={args.checkpoint}", flush=True)
@@ -70,6 +67,12 @@ if args.mode == 'train':
     print(f"U-Net Parameters : ch={args.ch} groups={args.groups} scale={tuple(args.scale)} add_attn={tuple(args.add_attn)} dropout_rate={args.dropout_rate} num_heads={args.num_heads}", flush=True)
     print(f"Random seed : {args.random_seed}", flush=True)
     print(f"Save path : {args.checkpoint}", flush=True)
+
+
+# Train
+if args.mode == 'train':
+    os.makedirs(args.checkpoint, exist_ok=True)
+    print_settings()
 
     # Load dataset
     ds = load_dataset(args.dataset, args.batch, resize, new_dim)
