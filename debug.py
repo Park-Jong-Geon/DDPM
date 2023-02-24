@@ -36,9 +36,9 @@ def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_pe
                 for i in range(sample_num):
                     if data_dim[2] == 1:
                         plt.imshow(jnp.take(samples, i, axis=0), cmap='gray')
-                        plt.savefig(f"{sample_dir}/seed{random_seed}_img{i}.png")
+                        plt.savefig(f"{sample_dir}/seed{random_seed}_step{state.step}_img{i}.png")
                     else:
-                        plt.imsave(f"{sample_dir}/seed{random_seed}_img{i}.png", jnp.take(samples, i, axis=0), cmap='gray')
+                        plt.imsave(f"{sample_dir}/seed{random_seed}_step{state.step}_img{i}.png", jnp.take(samples, i, axis=0), cmap='gray')
         
             pbar.set_description(f"Training at epoch {epoch}")
             pbar.set_postfix({'step' : state.step, 'loss' : loss})
