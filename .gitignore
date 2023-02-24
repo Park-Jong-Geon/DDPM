@@ -1,5 +1,6 @@
 __pycache__/*
 save/*
+sample/*
 debug.txt
 cifar10_png*
 *.tar.gz
