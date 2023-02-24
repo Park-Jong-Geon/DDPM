@@ -1,4 +1,3 @@
-*train.txt
 __pycache__/*
 save/*
 debug.txt
@@ -6,3 +5,4 @@ cifar10_png*
 *.tar.gz
 *checkpoint*
 *png*
+train_results/*
