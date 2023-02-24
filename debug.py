@@ -16,7 +16,7 @@ def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_pe
     for epoch in range(1, epochs+1):
         loss_per_epoch = []
         
-        for label, x_0 in enumerate((pbar := tqdm(ds))):
+        for x_0 in (pbar := tqdm(ds)):
             another_key, key = jax.random.split(key)
             t = jax.random.randint(another_key, shape=(x_0.shape[0],), minval=0, maxval=time_steps)
             x_t, eps = forward_process(x_0, t, beta, key)
