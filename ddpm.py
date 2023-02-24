@@ -21,7 +21,7 @@ parser.add_argument('--epochs', type=int, help='Required in train mode')
 parser.add_argument('--random_seed', type=int, required=True, help='Required')
 parser.add_argument('--checkpoint', type=str, required=True, help='Required')
 
-parser.add_argument('--save_period', type=int, default=100)
+parser.add_argument('--save_period', type=int, default=100000)
 parser.add_argument('--train_further', action='store_true')
 parser.add_argument('--old_checkpoint', type=str, default=None)
 
@@ -34,7 +34,7 @@ parser.add_argument('--beta_T', type=float, default=0.02)
 parser.add_argument('--ch', type=int, default=128)
 parser.add_argument('--groups', type=int, default=8)
 parser.add_argument('--scale', type=int, default=[1, 2, 2, 2], nargs="+")
-parser.add_argument('--add_attn', type=int, default=[2,], nargs="+")
+parser.add_argument('--add_attn', type=int, default=[1, 2, 3, 4], nargs="+")
 parser.add_argument('--dropout_rate', type=float, default=0.1)
 parser.add_argument('--num_heads', type=int, default=8)
 
@@ -68,6 +68,8 @@ if args.mode == 'train':
     print(f"train_further={args.train_further} old_checkpoint={args.old_checkpoint}")
     print(f"Beta scheduling : time_steps={args.time_steps} beta_0={args.beta_0} beta_T={args.beta_T}")
     print(f"U-Net Parameters : ch={args.ch} groups={args.groups} scale={tuple(args.scale)} add_attn={tuple(args.add_attn)} dropout_rate={args.dropout_rate} num_heads={args.num_heads}")
+    print(f"Random seed : {args.random_seed}")
+    print(f"Save path : {args.checkpoint}")
 
     # Load dataset
     ds = load_dataset(args.dataset, args.batch, resize, new_dim)

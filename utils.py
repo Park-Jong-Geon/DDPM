@@ -24,7 +24,7 @@ def img_resize(image, resize, size1, size2):
     return image
 
 def load_dataset(dataset, batch_size, resize, new_dim):
-    ds = tfds.load(dataset, as_supervised=True, split='test')
+    ds = tfds.load(dataset, as_supervised=True, split='train+test')
     print(f"Loaded {dataset} dataset")
     ds = ds.map(normalize, num_parallel_calls=tf.data.AUTOTUNE)
     if resize:
