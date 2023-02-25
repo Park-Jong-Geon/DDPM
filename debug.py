@@ -58,7 +58,7 @@ sample_num = 4
 epochs = 30
 random_seed = 230225
 checkpoint = 'save/mnist_debug'
-sample_dir = 'sample/mnist_debug'
+sample_dir = 'sample/mnist_debug_xavier_normal'
 
 mode = 'train'
 dataset = 'mnist'
@@ -70,7 +70,7 @@ sample_period = 1000
 time_steps = 1000
 beta_0 = 0.0001
 beta_T = 0.02
-ch = 16
+ch = 32
 groups = 8
 # scale = [1, 2, 2, 2]
 scale = [1, 2, 4, 8]

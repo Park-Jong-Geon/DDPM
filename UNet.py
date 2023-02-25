@@ -1,5 +1,5 @@
 import jax
-import jax.numpy as jnpinit
+import jax.numpy as jnp
 import flax.linen as nn
 import flax.linen.initializers as init
 
@@ -27,16 +27,16 @@ class resnet_block(nn.Module):
     @nn.compact
     def __call__(self, x, t_emb):
         x = nn.silu(nn.GroupNorm(num_groups=self.groups)(x))
-        x = nn.Conv(self.ch, (3, 3))(x)
+        x = nn.Conv(self.ch, (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(x)
         
-        t_emb = nn.Dense(self.ch)(nn.silu(t_emb))
+        t_emb = nn.Dense(self.ch, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(nn.silu(t_emb))
         x = x + jnp.expand_dims(t_emb, (1, 2))
 
         x = nn.silu(nn.GroupNorm(num_groups=self.groups)(x))
         x = nn.Dropout(rate=self.dropout_rate, deterministic=True)(x)
-        x = nn.Conv(self.ch, (3, 3))(x)
+        x = nn.Conv(self.ch, (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(x)
         
-        res = nn.Conv(self.ch, (1, 1))(x)
+        res = nn.Conv(self.ch, (1, 1), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(x)
         
         assert(x.shape == res.shape)
         return x + res
@@ -55,11 +55,11 @@ class UNet(nn.Module):
         t_emb = sin_embedding(self.ch)(t)
         
         # Why are the following two lines necessary?
-        t_emb = nn.silu(nn.Dense(4 * self.ch)(t_emb))
-        t_emb = nn.Dense(4 * self.ch)(t_emb)
+        t_emb = nn.silu(nn.Dense(4 * self.ch, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(t_emb))
+        t_emb = nn.Dense(4 * self.ch, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(t_emb)
         
         # Initial layer
-        ft = nn.Conv(self.ch, (3, 3))(x)
+        ft = nn.Conv(self.ch, (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(x)
         
         # Downsampling
         scale_len = len(self.scale)
@@ -70,7 +70,7 @@ class UNet(nn.Module):
             
             if i+1 in self.add_attn:
                 attn = nn.GroupNorm(num_groups=self.groups)(ft)
-                attn = nn.SelfAttention(num_heads=self.num_heads)(attn, deterministic=True)
+                attn = nn.SelfAttention(num_heads=self.num_heads, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(attn, deterministic=True)
                 assert ft.shape == attn.shape
                 #ft += nn.GroupNorm(num_groups=self.groups)(attn)
                 ft += attn
@@ -85,14 +85,14 @@ class UNet(nn.Module):
             
             if i != scale_len-1:
                 #ft = nn.avg_pool(ft, (2, 2), (2, 2))
-                ft = nn.Conv(self.ch * scale, (3, 3), 2, (1, 1))(ft)
+                ft = nn.Conv(self.ch * scale, (3, 3), 2, (1, 1), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft)
             
             # print(f"Feature dimension at 'downsampling' part: {ft.shape}")
                 
         # Middle
         ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
         attn = nn.GroupNorm(num_groups=self.groups)(ft)
-        attn = nn.SelfAttention(num_heads=self.num_heads)(attn, deterministic=True)
+        attn = nn.SelfAttention(num_heads=self.num_heads, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(attn, deterministic=True)
         assert ft.shape == attn.shape
         #ft += nn.GroupNorm(num_groups=self.groups)(attn)
         ft += attn
@@ -107,7 +107,7 @@ class UNet(nn.Module):
             
             if scale_len-i in self.add_attn:
                 attn = nn.GroupNorm(num_groups=self.groups)(ft)
-                attn = nn.SelfAttention(num_heads=self.num_heads)(ft, deterministic=True)
+                attn = nn.SelfAttention(num_heads=self.num_heads, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft, deterministic=True)
                 assert ft.shape == attn.shape
                 #ft += nn.GroupNorm(num_groups=self.groups)(attn)
                 ft += attn
@@ -121,7 +121,7 @@ class UNet(nn.Module):
             if i != scale_len-1:
                 B, H, W, C = ft.shape
                 ft = jax.image.resize(ft, (B, 2*H, 2*W, C), "nearest")
-                ft = nn.Conv(self.ch * scale, (3, 3))(ft)
+                ft = nn.Conv(self.ch * scale, (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft)
             
             # print(f"Feature dimension at 'upsampling' part: {ft.shape}")
         
@@ -129,6 +129,6 @@ class UNet(nn.Module):
         
         # Terminal layer
         ft = nn.silu(nn.GroupNorm(num_groups=self.groups)(ft))
-        out = nn.Conv(x.shape[3], (3, 3))(ft)
+        out = nn.Conv(x.shape[3], (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft)
         
         return out
