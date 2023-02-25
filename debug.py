@@ -11,7 +11,7 @@ from train_func import forward_process, train
 from sample_func import backward_process, apply_trained_model, img_rescale, execute_sample
 from matplotlib import pyplot as plt
 
-def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_period, sample_batch, new_dim, resize, data_dim):
+def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_period, sample_num, new_dim, resize, data_dim):
     time_steps = jnp.size(beta, axis=0)
     for epoch in range(1, epochs+1):
         loss_per_epoch = []
@@ -30,9 +30,9 @@ def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_pe
                 print(f"Checkpoint saved after {state.step} steps at {ckpt}")
             
             if state.step % sample_period == 0:
-                samples = execute_sample(sample_batch, state, beta, new_dim, key, resize, data_dim)
+                samples = execute_sample(sample_num, state, beta, new_dim, key, resize, data_dim)
 
-                assert sample_batch == jnp.size(samples, axis=0)
+                assert sample_num == jnp.size(samples, axis=0)
                 for i in range(sample_num):
                     if data_dim[2] == 1:
                         plt.imshow(jnp.take(samples, i, axis=0), cmap='gray')
@@ -55,29 +55,32 @@ def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_pe
     return state
 
 sample_num = 4
-epochs = 500
+epochs = 30
 random_seed = 230225
-checkpoint = 'save/cifar10_debug'
-sample_dir = 'sample/cifar10_debug'
+checkpoint = 'save/mnist_debug'
+sample_dir = 'sample/mnist_debug'
 
 mode = 'train'
-dataset = 'cifar10'
+dataset = 'mnist'
 lr = 2e-4
-sample_batch = 128
-save_period = 50000
+batch = 128
+save_period = 10000
 sample_period = 1000
 
 time_steps = 1000
 beta_0 = 0.0001
 beta_T = 0.02
-ch = 128
+ch = 16
 groups = 8
-scale = [1, 2, 2, 2]
-add_attn = [1, 2, 3, 4]
+# scale = [1, 2, 2, 2]
+scale = [1, 2, 4, 8]
+# add_attn = [1, 2, 3, 4]
+add_attn = [2,]
 dropout_rate = 0.1
-num_heads = 8
+# num_heads = 8
+num_heads = 1
 
-print(f"python3 ddpm.py --mode {mode} --dataset {dataset} --batch {sample_batch} --epochs {epochs} --random_seed {random_seed} --checkpoint {checkpoint}")
+print(f"python3 ddpm.py --mode {mode} --dataset {dataset} --batch {batch} --epochs {epochs} --random_seed {random_seed} --checkpoint {checkpoint}")
 
 dataset_info = {
     'cifar10': [[32, 32, 3], [32, 32, 3], False],
@@ -99,6 +102,6 @@ state = init_UNet(new_dim, model_args, lr, key)
 os.makedirs(checkpoint, exist_ok=True)
 os.makedirs(sample_dir, exist_ok=True)
 
-ds = load_dataset(dataset, sample_batch, resize, new_dim)
+ds = load_dataset(dataset, batch, resize, new_dim)
 
-debug(epochs, ds, state, beta, key, checkpoint, save_period, sample_dir, sample_period, sample_batch, new_dim, resize, data_dim)
+debug(epochs, ds, state, beta, key, checkpoint, save_period, sample_dir, sample_period, sample_num, new_dim, resize, data_dim)
