@@ -8,7 +8,7 @@ import os
 
 @jax.jit
 def forward_process(x_0, t, beta, eps):
-    assert x_t.shape == eps.shape
+    assert x_0.shape == eps.shape
     
     alpha_, sqrt_alpha_, sqrt_1_alpha_ = calculate_necessary_values(beta)
     x_t = jnp.reshape(jnp.take(sqrt_alpha_, t), (-1, 1, 1, 1)) * x_0 + jnp.reshape(jnp.take(sqrt_1_alpha_, t), (-1, 1, 1, 1)) * eps
