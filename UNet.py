@@ -12,12 +12,18 @@ class sin_embedding(nn.Module):
     @nn.compact
     def __call__(self, t):
         assert self.dim % 2 == 0
+        assert len(t.shape) == 1
+        
         half_dim = self.dim // 2
-        w = jnp.power(10000., - jnp.arange(half_dim) / (half_dim - 1))
-        arg = t[:, None] * w[None, :]
-        t_emb = jnp.concatenate([jnp.sin(arg), jnp.cos(arg)], 1)
-        return t_emb
-    
+        emb = jnp.log(10000) / (half_dim - 1)
+        emb = jnp.exp(jnp.arange(half_dim) * -emb)
+        emb = t[:, None] * emb[None, :]
+        emb = jnp.concatenate([jnp.sin(emb), jnp.cos(emb)], axis=1)
+        
+        assert len(emb.shape) == 2
+        assert emb.shape[1] == self.dim
+        return emb
+
 # ResNet-style block at each resolution
 class resnet_block(nn.Module):
     ch: int
@@ -49,6 +55,7 @@ class UNet(nn.Module):
     add_attn: tuple
     dropout_rate: float
     num_heads: int
+    num_res_blocks : int
     
     @nn.compact
     def __call__(self, x, t):        
@@ -62,31 +69,30 @@ class UNet(nn.Module):
         ft = nn.Conv(self.ch, (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(x)
         
         # Downsampling
+        assert ft.shape[1] == ft.shape[2]
         scale_len = len(self.scale)
         residual = []
         for i, scale in enumerate(self.scale):
-            ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
-            
-            
-            if i+1 in self.add_attn:
+            for j in range(self.num_res_blocks):
+                ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
+                
+                if ft.shape[1] in self.add_attn:
+                    attn = nn.GroupNorm(num_groups=self.groups)(ft)
+                    attn = nn.SelfAttention(num_heads=self.num_heads, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(attn, deterministic=True)
+                    assert ft.shape == attn.shape
+                    #ft += nn.GroupNorm(num_groups=self.groups)(attn)
+                    ft += attn
+                '''
                 attn = nn.GroupNorm(num_groups=self.groups)(ft)
-                attn = nn.SelfAttention(num_heads=self.num_heads, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(attn, deterministic=True)
+                attn = nn.SelfAttention(num_heads=self.num_heads)(attn, deterministic=True)
                 assert ft.shape == attn.shape
-                #ft += nn.GroupNorm(num_groups=self.groups)(attn)
                 ft += attn
-            
-            '''
-            attn = nn.GroupNorm(num_groups=self.groups)(ft)
-            attn = nn.SelfAttention(num_heads=self.num_heads)(attn, deterministic=True)
-            assert ft.shape == attn.shape
-            ft += attn
-            '''
-            residual.append(ft)
+                '''
+                residual.append(ft)
             
             if i != scale_len-1:
                 #ft = nn.avg_pool(ft, (2, 2), (2, 2))
                 ft = nn.Conv(self.ch * scale, (3, 3), 2, (1, 1), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft)
-            
             # print(f"Feature dimension at 'downsampling' part: {ft.shape}")
                 
         # Middle
@@ -101,23 +107,24 @@ class UNet(nn.Module):
         
         # Upsampling
         for i, scale in enumerate(reversed(self.scale)):
-            assert residual[-1].shape[0:3] == ft.shape[0:3]
-            ft = jnp.concatenate([residual.pop(), ft], 3)
-            ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
-            
-            if scale_len-i in self.add_attn:
+            for j in range(self.num_res_blocks):
+                assert residual[-1].shape[0:3] == ft.shape[0:3]
+                ft = jnp.concatenate([ft, residual.pop()], 3)
+                ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
+                
+                if ft.shape[1] in self.add_attn:
+                    attn = nn.GroupNorm(num_groups=self.groups)(ft)
+                    attn = nn.SelfAttention(num_heads=self.num_heads, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft, deterministic=True)
+                    assert ft.shape == attn.shape
+                    #ft += nn.GroupNorm(num_groups=self.groups)(attn)
+                    ft += attn
+                
+                '''
                 attn = nn.GroupNorm(num_groups=self.groups)(ft)
-                attn = nn.SelfAttention(num_heads=self.num_heads, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft, deterministic=True)
+                attn = nn.SelfAttention(num_heads=self.num_heads)(attn, deterministic=True)
                 assert ft.shape == attn.shape
-                #ft += nn.GroupNorm(num_groups=self.groups)(attn)
                 ft += attn
-            
-            '''
-            attn = nn.GroupNorm(num_groups=self.groups)(ft)
-            attn = nn.SelfAttention(num_heads=self.num_heads)(attn, deterministic=True)
-            assert ft.shape == attn.shape
-            ft += attn
-            '''
+                '''
             if i != scale_len-1:
                 B, H, W, C = ft.shape
                 ft = jax.image.resize(ft, (B, 2*H, 2*W, C), "nearest")
