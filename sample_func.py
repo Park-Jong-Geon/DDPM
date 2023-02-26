@@ -25,13 +25,18 @@ def apply_trained_model(trained_state, x_t, t):
 
 @jax.jit
 def img_rescale(imgs):
+    imgs = jnp.clip((imgs + 1) / 2, a_min=0, a_max=1)
+    imgs = jnp.uint8(imgs * 255)
+    return imgs
+'''
+def img_rescale(imgs):
     assert len(imgs.shape) == 4
     min = jnp.expand_dims(jnp.min(imgs, axis=(1, 2)), (1, 2))
     imgs = imgs - min
     max = jnp.expand_dims(jnp.max(imgs, axis=(1, 2)), (1, 2))
     imgs = jnp.uint8(imgs / max * 255)
     return imgs
-
+'''
 '''
 def execute_single_sample_at_all_steps(trained_state, beta, new_dim, key, resize, data_dim):
     eps = jax.random.normal(key, (1, *new_dim))
@@ -63,7 +68,7 @@ def execute_sample(batch, trained_state, beta, new_dim, key, resize, data_dim):
     x_t = jax.random.normal(key, (batch, *new_dim))
     time_steps = jnp.size(beta, axis=0)
     for t in (pbar := tqdm(reversed(range(0, time_steps)))):
-        vec_t = jnp.ones(shape=(batch,), dtype=int) * t
+        vec_t = jnp.repeat(t, batch)
         eps_theta = apply_trained_model(trained_state, x_t, vec_t)
         
         if t > 0:
