@@ -35,7 +35,7 @@ def img_rescale(imgs):
 '''
 def execute_single_sample_at_all_steps(trained_state, beta, new_dim, key, resize, data_dim):
     eps = jax.random.normal(key, (1, *new_dim))
-    backward_img = [jnp.clip(eps, a_min=-1, a_max=1)]
+    backward_img = [eps]
 
     time_steps = jnp.size(beta, axis=0)
     for t in tqdm(reversed(range(0, time_steps))):
