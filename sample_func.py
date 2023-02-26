@@ -25,16 +25,16 @@ def apply_trained_model(trained_state, x_t, t):
 
 @jax.jit
 def img_rescale(imgs):
-    imgs = jnp.clip((imgs + 1) / 2, a_min=0, a_max=1)
-    imgs = jnp.uint8(imgs * 255)
-    return imgs
-'''
-def img_rescale(imgs):
     assert len(imgs.shape) == 4
     min = jnp.expand_dims(jnp.min(imgs, axis=(1, 2)), (1, 2))
     imgs = imgs - min
     max = jnp.expand_dims(jnp.max(imgs, axis=(1, 2)), (1, 2))
     imgs = jnp.uint8(imgs / max * 255)
+    return imgs
+'''
+def img_rescale(imgs):
+    imgs = jnp.clip((imgs + 1) / 2, a_min=0, a_max=1)
+    imgs = jnp.uint8(imgs * 255)
     return imgs
 '''
 '''
