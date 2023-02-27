@@ -32,20 +32,21 @@ class resnet_block(nn.Module):
     
     @nn.compact
     def __call__(self, x, t_emb):
-        x = nn.silu(nn.GroupNorm(num_groups=self.groups)(x))
-        x = nn.Conv(self.ch, (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(x)
+        ft = nn.silu(nn.GroupNorm(num_groups=self.groups)(x))
+        ft = nn.Conv(self.ch, (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft)
         
         t_emb = nn.Dense(self.ch, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(nn.silu(t_emb))
-        x = x + jnp.expand_dims(t_emb, (1, 2))
+        ft = ft + jnp.expand_dims(t_emb, (1, 2))
 
-        x = nn.silu(nn.GroupNorm(num_groups=self.groups)(x))
-        x = nn.Dropout(rate=self.dropout_rate, deterministic=True)(x)
-        x = nn.Conv(self.ch, (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(x)
+        ft = nn.silu(nn.GroupNorm(num_groups=self.groups)(ft))
+        ft = nn.Dropout(rate=self.dropout_rate, deterministic=True)(ft)
+        ft = nn.Conv(self.ch, (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft)
         
-        res = nn.Conv(self.ch, (1, 1), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(x)
+        if x.shape != ft.shape:
+            x = nn.Conv(self.ch, (1, 1), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(x)
         
-        assert(x.shape == res.shape)
-        return x + res
+        assert(ft.shape == x.shape)
+        return ft + x
 
 # U-Net
 class UNet(nn.Module):
@@ -71,12 +72,13 @@ class UNet(nn.Module):
         # Downsampling
         assert ft.shape[1] == ft.shape[2]
         scale_len = len(self.scale)
-        residual = []
+        residual = [ft]
         for i, scale in enumerate(self.scale):
             for j in range(self.num_res_blocks):
                 ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
                 
                 if ft.shape[1] in self.add_attn:
+                    # print(f"Attention layer added at resolution {ft.shape[1]}")
                     attn = nn.GroupNorm(num_groups=self.groups)(ft)
                     attn = nn.SelfAttention(num_heads=self.num_heads, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(attn, deterministic=True)
                     assert ft.shape == attn.shape
@@ -93,6 +95,7 @@ class UNet(nn.Module):
             if i != scale_len-1:
                 #ft = nn.avg_pool(ft, (2, 2), (2, 2))
                 ft = nn.Conv(self.ch * scale, (3, 3), 2, (1, 1), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft)
+                residual.append(ft)
             # print(f"Feature dimension at 'downsampling' part: {ft.shape}")
                 
         # Middle
@@ -107,7 +110,7 @@ class UNet(nn.Module):
         
         # Upsampling
         for i, scale in enumerate(reversed(self.scale)):
-            for j in range(self.num_res_blocks):
+            for j in range(self.num_res_blocks + 1):
                 assert residual[-1].shape[0:3] == ft.shape[0:3]
                 ft = jnp.concatenate([ft, residual.pop()], 3)
                 ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
@@ -118,7 +121,6 @@ class UNet(nn.Module):
                     assert ft.shape == attn.shape
                     #ft += nn.GroupNorm(num_groups=self.groups)(attn)
                     ft += attn
-                
                 '''
                 attn = nn.GroupNorm(num_groups=self.groups)(ft)
                 attn = nn.SelfAttention(num_heads=self.num_heads)(attn, deterministic=True)
