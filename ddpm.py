@@ -36,7 +36,7 @@ parser.add_argument('--groups', type=int, default=8)
 parser.add_argument('--scale', type=int, default=[1, 2, 2, 2], nargs="+")
 parser.add_argument('--add_attn', type=int, default=[16,], nargs="+")
 parser.add_argument('--dropout_rate', type=float, default=0.1)
-parser.add_argument('--num_heads', type=int, default=8)
+parser.add_argument('--num_heads', type=int, default=1)
 parser.add_argument('--num_res_blocks', type=int, default=2)
 
 args = parser.parse_args()
@@ -60,6 +60,7 @@ state = init_UNet(new_dim, model_args, args.lr, key)
 
 # Print initial training settings
 def print_settings(args):
+    print(f"python3 ddpm.py --mode {args.mode} --dataset {args.dataset} --batch {args.batch} --epochs {args.epochs} --random_seed {args.random_seed} --checkpoint {args.checkpoint}", flush=True)
     print(ctime(time()), flush=True)
     print(f"dataset={args.dataset} lr={args.lr} batch_size={args.batch} epochs={args.epochs}", flush=True)
     print(f"checkpoint={args.checkpoint}", flush=True)
@@ -73,7 +74,7 @@ def print_settings(args):
 # Train
 if args.mode == 'train':
     os.makedirs(args.checkpoint, exist_ok=True)
-    print_settings()
+    print_settings(args)
 
     # Load dataset
     ds = load_dataset(args.dataset, args.batch, resize, new_dim)
@@ -89,6 +90,7 @@ if args.mode == 'train':
 # Sample
 else:
     os.makedirs(args.sample_dir, exist_ok=True)
+    print_settings(args)
 
     restored_state = checkpoints.restore_checkpoint(ckpt_dir=args.checkpoint, target=state)
     print(f"Loaded trained model from {args.checkpoint}", flush=True)

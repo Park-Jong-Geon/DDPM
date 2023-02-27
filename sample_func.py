@@ -13,16 +13,20 @@ def backward_process(x_t, t, eps_theta, beta, eps):
     # alpha__t = jnp.take(alpha_, t)
 
     coef = beta_t / jnp.take(sqrt_1_alpha_, t)
+<<<<<<< HEAD
     mean = jnp.reshape((1 / (1-beta_t) ** 0.5), (-1, 1, 1, 1)) * (x_t - jnp.reshape(coef, (-1, 1, 1, 1)) * eps_theta)
+=======
+    mean = jnp.reshape((1 / jnp.sqrt(1.-beta_t)), (-1, 1, 1, 1)) * (x_t - jnp.reshape(coef, (-1, 1, 1, 1)) * eps_theta)
+>>>>>>> bd925e11b8856fe08b01696d4bb3b3b1ed220b88
 
     # tilde_beta_t = beta_t * (1 - alpha__t/(1-beta_t)) / (1 - alpha__t)
 
-    return mean + jnp.reshape(beta_t ** 0.5, (-1, 1, 1, 1)) * eps
+    return mean + jnp.reshape(jnp.sqrt(beta_t), (-1, 1, 1, 1)) * eps
 
 @jax.jit
 def apply_trained_model(trained_state, x_t, t):
     return trained_state.apply_fn({'params': trained_state.params}, x_t, t)
-
+'''
 @jax.jit
 def img_rescale(imgs):
     assert len(imgs.shape) == 4
@@ -30,6 +34,14 @@ def img_rescale(imgs):
     imgs = imgs - min
     max = jnp.expand_dims(jnp.max(imgs, axis=(1, 2)), (1, 2))
     imgs = jnp.uint8(imgs / max * 255)
+    return imgs
+'''
+
+@jax.jit
+def img_rescale(imgs):
+    imgs = jnp.clip(imgs, a_min=-1, a_max=1)
+    imgs = (imgs + 1) / 2 * 255
+    imgs = jnp.uint8(imgs)
     return imgs
 
 '''
@@ -63,7 +75,7 @@ def execute_sample(batch, trained_state, beta, new_dim, key, resize, data_dim):
     x_t = jax.random.normal(key, (batch, *new_dim))
     time_steps = jnp.size(beta, axis=0)
     for t in (pbar := tqdm(reversed(range(0, time_steps)))):
-        vec_t = jnp.ones(shape=(batch,), dtype=int) * t
+        vec_t = jnp.repeat(t, batch)
         eps_theta = apply_trained_model(trained_state, x_t, vec_t)
         
         if t > 0:
@@ -75,6 +87,7 @@ def execute_sample(batch, trained_state, beta, new_dim, key, resize, data_dim):
         x_t_1 = backward_process(x_t, vec_t, eps_theta, beta, eps)
 
         x_t = x_t_1
+        # print(f"{t}\n{x_t}")
 
         pbar.set_description("Sampling")
     
