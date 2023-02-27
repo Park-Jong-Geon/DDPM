@@ -60,6 +60,7 @@ state = init_UNet(new_dim, model_args, args.lr, key)
 
 # Print initial training settings
 def print_settings(args):
+    print(f"python3 ddpm.py --mode {args.mode} --dataset {args.dataset} --batch {args.batch} --epochs {args.epochs} --random_seed {args.random_seed} --checkpoint {args.checkpoint}", flush=True)
     print(ctime(time()), flush=True)
     print(f"dataset={args.dataset} lr={args.lr} batch_size={args.batch} epochs={args.epochs}", flush=True)
     print(f"checkpoint={args.checkpoint}", flush=True)
