@@ -36,8 +36,8 @@ def img_rescale(imgs):
 @jax.jit
 def img_rescale(imgs):
     imgs = jnp.clip(imgs, a_min=-1, a_max=1)
-    imgs = (imgs + 1) / 2
-    imgs = jnp.uint8(imgs * 255)
+    imgs = (imgs + 1) / 2 * 255
+    imgs = jnp.uint8(imgs)
     return imgs
 
 '''
