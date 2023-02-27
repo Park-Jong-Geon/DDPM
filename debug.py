@@ -13,6 +13,7 @@ from matplotlib import pyplot as plt
 
 def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_period, sample_num, new_dim, resize, data_dim):
     time_steps = jnp.size(beta, axis=0)
+    key_ = key
     for epoch in range(1, epochs+1):
         loss_per_epoch = []
         
@@ -31,7 +32,7 @@ def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_pe
                 print(f"Checkpoint saved after {state.step} steps at {ckpt}")
             
             if state.step % sample_period == 0:
-                samples = execute_sample(sample_num, state, beta, new_dim, key, resize, data_dim)
+                samples = execute_sample(sample_num, state, beta, new_dim, key_, resize, data_dim)
 
                 assert sample_num == jnp.size(samples, axis=0)
                 for i in range(sample_num):
@@ -56,10 +57,10 @@ def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_pe
     return state
 
 sample_num = 4
-epochs = 30
+epochs = 300
 random_seed = 230227
-checkpoint = 'save/cifar10_debug'
-sample_dir = 'sample/cifar10_debug'
+checkpoint = 'save/cifar10_debug_rev'
+sample_dir = 'sample/cifar10_debug_rev'
 
 mode = 'train'
 dataset = 'cifar10'
