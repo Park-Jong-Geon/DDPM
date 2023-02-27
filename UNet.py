@@ -33,36 +33,21 @@ class resnet_block(nn.Module):
     @nn.compact
     def __call__(self, x, t_emb):
         ft = nn.silu(nn.GroupNorm(num_groups=self.groups)(x))
-<<<<<<< HEAD
-        ft = nn.Conv(self.ch, (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft)
-        
-        t_emb = nn.Dense(self.ch, kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(nn.silu(t_emb))
-=======
         ft = nn.Conv(self.ch, (3, 3), kernel_init=init.kaiming_normal(), bias_init=init.zeros_init())(ft)
         
         t_emb = nn.Dense(self.ch, kernel_init=init.kaiming_normal(), bias_init=init.zeros_init())(nn.silu(t_emb))
->>>>>>> bd925e11b8856fe08b01696d4bb3b3b1ed220b88
         ft = ft + jnp.expand_dims(t_emb, (1, 2))
 
         ft = nn.silu(nn.GroupNorm(num_groups=self.groups)(ft))
         ft = nn.Dropout(rate=self.dropout_rate, deterministic=True)(ft)
-<<<<<<< HEAD
-        ft = nn.Conv(self.ch, (3, 3), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft)
-        
-        if x.shape != ft.shape:
-            x = nn.Conv(self.ch, (1, 1), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(x)
-        
-        assert ft.shape == x.shape
-        return ft
-=======
         ft = nn.Conv(self.ch, (3, 3), kernel_init=init.kaiming_normal(), bias_init=init.zeros_init())(ft)
         
         if x.shape != ft.shape:
-            x = nn.Conv(self.ch, (1, 1), kernel_init=init.kaiming_normal(), bias_init=init.zeros_init())(x)
+            # x = nn.Conv(self.ch, (1, 1), kernel_init=init.kaiming_normal(), bias_init=init.zeros_init())(x)x = nn.Conv(self.ch, (1, 1), kernel_init=init.kaiming_normal(), bias_init=init.zeros_init())(x)
+            x = nn.Conv(self.ch, (1, 1))(x)
         
         assert(ft.shape == x.shape)
         return ft + x
->>>>>>> bd925e11b8856fe08b01696d4bb3b3b1ed220b88
 
 # U-Net
 class UNet(nn.Module):
@@ -110,11 +95,7 @@ class UNet(nn.Module):
             
             if i != scale_len-1:
                 #ft = nn.avg_pool(ft, (2, 2), (2, 2))
-<<<<<<< HEAD
-                ft = nn.Conv(self.ch * scale, (3, 3), 2, (1, 1), kernel_init=init.xavier_uniform(), bias_init=init.zeros_init())(ft)
-=======
                 ft = nn.Conv(self.ch * scale, (3, 3), 2, (1, 1), kernel_init=init.kaiming_normal(), bias_init=init.zeros_init())(ft)
->>>>>>> bd925e11b8856fe08b01696d4bb3b3b1ed220b88
                 residual.append(ft)
             # print(f"Feature dimension at 'downsampling' part: {ft.shape}")
                 
@@ -130,11 +111,7 @@ class UNet(nn.Module):
         
         # Upsampling
         for i, scale in enumerate(reversed(self.scale)):
-<<<<<<< HEAD
-            for j in range(self.num_res_blocks+1):
-=======
             for j in range(self.num_res_blocks + 1):
->>>>>>> bd925e11b8856fe08b01696d4bb3b3b1ed220b88
                 assert residual[-1].shape[0:3] == ft.shape[0:3]
                 ft = jnp.concatenate([ft, residual.pop()], 3)
                 ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)

@@ -13,11 +13,7 @@ def backward_process(x_t, t, eps_theta, beta, eps):
     # alpha__t = jnp.take(alpha_, t)
 
     coef = beta_t / jnp.take(sqrt_1_alpha_, t)
-<<<<<<< HEAD
-    mean = jnp.reshape((1 / (1-beta_t) ** 0.5), (-1, 1, 1, 1)) * (x_t - jnp.reshape(coef, (-1, 1, 1, 1)) * eps_theta)
-=======
     mean = jnp.reshape((1 / jnp.sqrt(1.-beta_t)), (-1, 1, 1, 1)) * (x_t - jnp.reshape(coef, (-1, 1, 1, 1)) * eps_theta)
->>>>>>> bd925e11b8856fe08b01696d4bb3b3b1ed220b88
 
     # tilde_beta_t = beta_t * (1 - alpha__t/(1-beta_t)) / (1 - alpha__t)
 

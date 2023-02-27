@@ -20,7 +20,7 @@ def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_pe
         for x_0 in (pbar := tqdm(ds)):
             another_key, key = jax.random.split(key)
             eps = jax.random.normal(key, x_0.shape)
-            t = jax.random.randint(another_key, shape=(x_0.shape[0]), minval=0, maxval=time_steps)
+            t = jax.random.randint(another_key, shape=(x_0.shape[0],), minval=0, maxval=time_steps)
             x_t = forward_process(x_0, t, beta, eps)
             loss, state = train(state, x_t, t, eps)
 
@@ -56,19 +56,11 @@ def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_pe
 
     return state
 
-<<<<<<< HEAD
-sample_num = 4
-epochs = 300
-random_seed = 230227
-checkpoint = 'save/cifar10_debug_rev'
-sample_dir = 'sample/cifar10_debug_rev'
-=======
 sample_num = 8
 epochs = 30
 random_seed = 230227
 checkpoint = 'save/mnist_rev'
 sample_dir = 'sample/mnist_rev'
->>>>>>> bd925e11b8856fe08b01696d4bb3b3b1ed220b88
 
 mode = 'train'
 dataset = 'mnist'
@@ -80,9 +72,9 @@ sample_period = 1000
 time_steps = 1000
 beta_0 = 0.0001
 beta_T = 0.02
-ch = 32
+ch = 128
 groups = 8
-scale = [1, 2, 4, 8]
+scale = [1, 2, 2, 2]
 add_attn = [16]
 dropout_rate = 0.1
 # num_heads = 8
