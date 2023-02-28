@@ -57,8 +57,8 @@ def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_pe
     return state
 
 sample_num = 8
-epochs = 30
-random_seed = 230227
+epochs = 1000
+random_seed = 230228
 checkpoint = 'save/mnist_rev'
 sample_dir = 'sample/mnist_rev'
 
@@ -66,15 +66,15 @@ mode = 'train'
 dataset = 'mnist'
 lr = 2e-4
 batch = 128
-save_period = 10000
+save_period = 100000
 sample_period = 1000
 
 time_steps = 1000
 beta_0 = 0.0001
 beta_T = 0.02
-ch = 128
+ch = 32
 groups = 8
-scale = [1, 2, 2, 2]
+scale = [1, 2, 4, 8]
 add_attn = [16]
 dropout_rate = 0.1
 # num_heads = 8
