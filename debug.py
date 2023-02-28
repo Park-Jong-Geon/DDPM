@@ -63,7 +63,7 @@ checkpoint = 'save/mnist_rev'
 sample_dir = 'sample/mnist_rev'
 
 mode = 'train'
-dataset = 'mnist'
+dataset = 'cifar10'
 lr = 2e-4
 batch = 128
 save_period = 100000
