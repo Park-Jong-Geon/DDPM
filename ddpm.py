@@ -22,7 +22,7 @@ parser.add_argument('--epochs', type=int, help='Required in train mode')
 parser.add_argument('--random_seed', type=int, required=True, help='Required')
 parser.add_argument('--checkpoint', type=str, required=True, help='Required')
 
-parser.add_argument('--save_period', type=int, default=10000)
+parser.add_argument('--save_period', type=int, default=50000)
 parser.add_argument('--train_further', action='store_true')
 parser.add_argument('--old_checkpoint', type=str, default=None)
 
@@ -81,7 +81,7 @@ def print_settings(args):
     print(f"train_further={args.train_further} old_checkpoint={args.old_checkpoint}", flush=True)
     print(f"Beta scheduling : time_steps={args.time_steps} beta_0={args.beta_0} beta_T={args.beta_T}", flush=True)
     print(f"U-Net Parameters : ch={args.ch} groups={args.groups} scale={tuple(args.scale)} add_attn={tuple(args.add_attn)} dropout_rate={args.dropout_rate} num_heads={args.num_heads} num_res_blocks={args.num_res_blocks}", flush=True)
-    print(f"Learning related parameters : grad_clip={args.grad_clip} peak_value={args.peak_value} warmup_steps={args.warmup_steps}")
+    print(f"Learning related parameters : grad_clip={args.grad_clip} warmup_steps={args.warmup_steps} decay_steps={args.decay_steps}")
     print(f"Random seed : {args.random_seed}", flush=True)
     print(f"Save path : {args.checkpoint}", flush=True)
     print(f"Random Horizontal Flip : {args.rand_flip}", flush=True)
