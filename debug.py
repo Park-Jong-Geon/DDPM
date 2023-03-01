@@ -57,17 +57,17 @@ def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_pe
     return state
 
 sample_num = 8
-epochs = 1000
+epochs = 2000
 random_seed = 230228
 checkpoint = 'save/mnist_rev'
 sample_dir = 'sample/mnist_rev'
 
 mode = 'train'
-dataset = 'cifar10'
+dataset = 'mnist'
 lr = 2e-4
 batch = 128
 save_period = 100000
-sample_period = 1000
+sample_period = 10000
 
 time_steps = 1000
 beta_0 = 0.0001
