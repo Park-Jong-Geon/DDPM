@@ -59,17 +59,17 @@ def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_pe
     return state
 
 sample_num = 8
-epochs = 600
+epochs = 1800
 random_seed = 230228
-checkpoint = 'save/cifar10_rev'
-sample_dir = 'sample/cifar10_rev'
+checkpoint = 'save/cifar10_tpuv3'
+sample_dir = 'sample/cifar10_tpuv3'
 
 mode = 'train'
 dataset = 'cifar10'
 lr = 2e-4
 batch = 128
 save_period = 100000
-sample_period = 5000
+sample_period = 10000
 
 time_steps = 1000
 beta_0 = 0.0001
