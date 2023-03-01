@@ -33,13 +33,16 @@ def load_dataset(dataset, batch_size, resize, new_dim):
     ds = tfds.as_numpy(ds.shuffle(60000).batch(batch_size).prefetch(tf.data.AUTOTUNE))
     return ds
 
-def init_UNet(new_dim, model_args, lr, key):
+def init_UNet(new_dim, model_args, lr_args, key):
     dummy_x = jnp.ones(shape=(1, *new_dim))
     dummy_t = jnp.ones(shape=(1, ))
     
     model = UNet(*model_args)
     params = model.init(key, dummy_x, dummy_t)['params']
-    tx = optax.adam(lr)
+    
+    grad_clip, peak_value, warmup_steps, decay_steps = lr_args
+    lr = optax.warmup_cosine_decay_schedule(init_value=0, peak_value=peak_value, warmup_steps=warmup_steps, decay_steps=decay_steps)
+    tx = optax.chain(optax.clip(grad_clip), optax.adam(lr, b1=0.9, b2=0.999))
 
     state = train_state.TrainState.create(apply_fn=model.apply, params=params, tx=tx)
     return state

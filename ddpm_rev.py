@@ -41,7 +41,7 @@ parser.add_argument('--num_heads', type=int, default=1)
 parser.add_argument('--num_res_blocks', type=int, default=2)
 
 parser.add_argument('--grad_clip', type=float, default=1)
-parser.add_argument('--peak_value', type=float, default=2e-4)
+# parser.add_argument('--peak_value', type=float, default=2e-4)
 parser.add_argument('--warmup_steps', type=int, default=5000)
 parser.add_argument('--decay_steps', type=int, default=50000)
 
@@ -69,9 +69,8 @@ beta = jnp.linspace(args.beta_0, args.beta_T, args.time_steps)
 
 # Initialize the model
 model_args = [args.ch, args.groups, tuple(args.scale), tuple(args.add_attn), args.dropout_rate, args.num_heads, args.num_res_blocks]
-# lr_args = [args.grad_clip, args.peak_value, args.warmup_steps, args.decay_steps]
-# state = init_UNet(new_dim, model_args, lr_args, key)
-state = init_UNet(new_dim, model_args, args.lr, key)
+lr_args = [args.grad_clip, args.lr, args.warmup_steps, args.decay_steps]
+state = init_UNet(new_dim, model_args, lr_args, key)
 
 # Print initial training settings
 def print_settings(args):
@@ -82,7 +81,7 @@ def print_settings(args):
     print(f"train_further={args.train_further} old_checkpoint={args.old_checkpoint}", flush=True)
     print(f"Beta scheduling : time_steps={args.time_steps} beta_0={args.beta_0} beta_T={args.beta_T}", flush=True)
     print(f"U-Net Parameters : ch={args.ch} groups={args.groups} scale={tuple(args.scale)} add_attn={tuple(args.add_attn)} dropout_rate={args.dropout_rate} num_heads={args.num_heads} num_res_blocks={args.num_res_blocks}", flush=True)
-    # print(f"Learning related parameters : grad_clip={args.grad_clip} peak_value={args.peak_value} warmup_steps={args.warmup_steps}")
+    print(f"Learning related parameters : grad_clip={args.grad_clip} peak_value={args.peak_value} warmup_steps={args.warmup_steps}")
     print(f"Random seed : {args.random_seed}", flush=True)
     print(f"Save path : {args.checkpoint}", flush=True)
     print(f"Random Horizontal Flip : {args.rand_flip}", flush=True)

@@ -67,16 +67,16 @@ def execute_single_sample_at_all_steps(trained_state, beta, new_dim, key, resize
     return backward_img
 '''
 
-def execute_sample(batch, trained_state, beta, new_dim, key, resize, data_dim):
-    x_t = jax.random.normal(key, (batch, *new_dim))
+def execute_sample(sample_num, trained_state, beta, new_dim, key, resize, data_dim):
+    x_t = jax.random.normal(key, (sample_num, *new_dim))
     time_steps = jnp.size(beta, axis=0)
     for t in (pbar := tqdm(reversed(range(0, time_steps)))):
-        vec_t = jnp.repeat(t, batch)
+        vec_t = jnp.repeat(t, sample_num)
         eps_theta = apply_trained_model(trained_state, x_t, vec_t)
         
         if t > 0:
             another_key, key = jax.random.split(key)
-            eps = jax.random.normal(key=key, shape=(batch, *new_dim))
+            eps = jax.random.normal(key=key, shape=(sample_num, *new_dim))
         else:
             eps = 0
         
@@ -89,5 +89,20 @@ def execute_sample(batch, trained_state, beta, new_dim, key, resize, data_dim):
     
     samples = img_rescale(x_t)
     if resize:
-        samples = jax.image.resize(samples, shape=(batch, *data_dim), method='nearest')
+        samples = jax.image.resize(samples, shape=(sample_num, *data_dim), method='nearest')
+    return samples
+
+def execute_many_samples(device_memory_threshold, sample_num, trained_state, beta, new_dim, key, resize, data_dim):
+    samples = []
+    samples_left = sample_num
+    while samples_left > 0:
+        if samples_left >= device_memory_threshold:
+            batch = execute_sample(device_memory_threshold, trained_state, beta, new_dim, key, resize, data_dim)
+        else:
+            batch = execute_sample(samples_left, trained_state, beta, new_dim, key, resize, data_dim)
+        
+        samples.append(batch)
+        samples_left -= device_memory_threshold
+        another_key, key = jax.random.split(key)
+    
     return samples
