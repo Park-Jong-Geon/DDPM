@@ -5,6 +5,7 @@ import jax
 import jax.numpy as jnp
 from utils import load_dataset
 from utils import init_UNet
+from utils import save_imgs
 from train_func import execute_train
 from sample_func import execute_sample
 from flax.training import checkpoints
@@ -39,6 +40,11 @@ parser.add_argument('--dropout_rate', type=float, default=0.1)
 parser.add_argument('--num_heads', type=int, default=1)
 parser.add_argument('--num_res_blocks', type=int, default=2)
 
+parser.add_argument('--rand_flip', type=bool, default=True)
+
+parser.add_argument('--train_and_sample', action='store_true')
+parser.add_argument('--sample_period', type=int, default=10000)
+
 args = parser.parse_args()
 
 dataset_info = {
@@ -69,7 +75,7 @@ def print_settings(args):
     print(f"U-Net Parameters : ch={args.ch} groups={args.groups} scale={tuple(args.scale)} add_attn={tuple(args.add_attn)} dropout_rate={args.dropout_rate} num_heads={args.num_heads} num_res_blocks={args.num_res_blocks}", flush=True)
     print(f"Random seed : {args.random_seed}", flush=True)
     print(f"Save path : {args.checkpoint}", flush=True)
-
+    print(f"Random Horizontal Flip : {args.rand_flip}", flush=True)
 
 # Train
 if args.mode == 'train':
@@ -83,7 +89,10 @@ if args.mode == 'train':
     if args.train_further:
         state = checkpoints.restore_checkpoint(ckpt_dir=args.old_checkpoint, target=state)
         print(f"Checkpoint restored from {args.old_checkpoint}", flush=True)
-    state = execute_train(args.epochs, ds, state, beta, key, args.checkpoint, args.save_period)
+    
+    train_and_sample_params = [args.sample_period, args.sample_dir, args.sample_num, dataset_info[args.dataset], args.random_seed]
+    state = execute_train(args.epochs, ds, state, beta, key, args.checkpoint, args.save_period, args.rand_flip, 
+                          args.train_and_sample, train_and_sample_params)
 
     print("")
 
@@ -97,14 +106,7 @@ else:
     
     samples = execute_sample(args.sample_num, restored_state, beta, new_dim, key, resize, data_dim)
 
-    assert(args.sample_num == jnp.size(samples, axis=0))
-    for i in range(args.sample_num):
-        if data_dim[2] == 1:
-            plt.imshow(jnp.take(samples, i, axis=0), cmap='gray')
-            plt.savefig(f"{args.sample_dir}/seed{args.random_seed}_img{i}.png")
-        else:
-            plt.imsave(f"{args.sample_dir}/seed{args.random_seed}_img{i}.png", jnp.take(samples, i, axis=0))
-
+    save_imgs(samples, data_dim, args.sample_dir, args.random_seed)
 '''
     for t in range(args.time_steps):
         if t % 100 == 0:

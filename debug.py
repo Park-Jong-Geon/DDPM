@@ -11,13 +11,15 @@ from train_func import forward_process, train
 from sample_func import backward_process, apply_trained_model, img_rescale, execute_sample
 from matplotlib import pyplot as plt
 
-def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_period, sample_num, new_dim, resize, data_dim):
+def debug(epochs, ds, state, beta, key, ckpt, save_period, sample_dir, sample_period, sample_num, new_dim, resize, data_dim, rand_flip):
     time_steps = jnp.size(beta, axis=0)
     key_ = key
     for epoch in range(1, epochs+1):
         loss_per_epoch = []
         
         for x_0 in (pbar := tqdm(ds)):
+            if rand_flip:
+                x_0 = tf.image.random_flip_left_right(x_0)
             another_key, key = jax.random.split(key)
             eps = jax.random.normal(key, x_0.shape)
             t = jax.random.randint(another_key, shape=(x_0.shape[0],), minval=0, maxval=time_steps)

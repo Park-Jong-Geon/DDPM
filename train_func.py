@@ -1,8 +1,11 @@
+import tensorflow as tf
 import jax
 import jax.numpy as jnp
 import numpy as np
 from flax.training import checkpoints
+from sample_func import execute_sample
 from utils import calculate_necessary_values
+from utils import save_imgs
 from tqdm import tqdm
 import os
 
@@ -27,12 +30,21 @@ def train(state, x_t, t, eps):
     state = state.apply_gradients(grads=grads)
     return loss, state
 
-def execute_train(epochs, ds, state, beta, key, ckpt, save_period):
+def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip, 
+                  train_and_sample=False, train_and_sample_params=None):
+    if train_and_sample:
+        key_ = key
+        sample_period, sample_dir, sample_num, ds_info, random_seed = train_and_sample_params
+        data_dim, new_dim, resize = ds_info
+        os.makedirs(sample_dir, exist_ok=True)
+    
     time_steps = jnp.size(beta, axis=0)
     for epoch in range(1, epochs+1):
         loss_per_epoch = []
         
         for x_0 in (pbar := tqdm(ds)):
+            if rand_flip:
+                x_0 = jnp.array(tf.image.random_flip_left_right(x_0))
             another_key, key = jax.random.split(key)
             eps = jax.random.normal(key, x_0.shape)
             t = jax.random.randint(another_key, shape=(x_0.shape[0],), minval=0, maxval=time_steps)
@@ -45,6 +57,12 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period):
                 assert len(os.listdir(ckpt)) < 1e+8
                 checkpoints.save_checkpoint(ckpt_dir=ckpt, target=state, step=state.step, keep=1e+8)
                 print(f"Checkpoint saved after {state.step} steps at {ckpt}", flush=True)
+            
+            if train_and_sample and (state.step % sample_period == 0):
+                samples = execute_sample(sample_num, state, beta, new_dim, key_, resize, data_dim)
+                
+                save_imgs(samples, data_dim, sample_dir, random_seed)
+            
             pbar.set_description(f"Training at epoch {epoch}")
             pbar.set_postfix({'step' : state.step, 'loss' : loss})
 
@@ -54,6 +72,11 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period):
         assert len(os.listdir(ckpt)) < 1e+8
         checkpoints.save_checkpoint(ckpt_dir=ckpt, target=state, step=state.step, keep=1e+8)
         print(f"Checkpoint saved after {state.step} steps at {ckpt}", flush=True)
+    
+    if train_and_sample and (state.step % sample_period != 0):
+        samples = execute_sample(sample_num, state, beta, new_dim, key_, resize, data_dim)
+        
+        save_imgs(samples, data_dim, sample_dir, random_seed)
 
     print(f"Finished training after {epoch} epochs or {state.step} steps", flush=True)
 
