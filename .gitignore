@@ -7,5 +7,4 @@ cifar10_png*
 *png*
 train_results/*
 *.txt
-TTUR/*
 FID/*
