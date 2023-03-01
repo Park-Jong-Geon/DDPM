@@ -6,6 +6,7 @@ from flax.training import train_state
 import optax
 from UNet import UNet
 from functools import partial
+from matplotlib import pyplot as plt
 
 @jax.jit
 def calculate_necessary_values(beta):
@@ -42,3 +43,12 @@ def init_UNet(new_dim, model_args, lr, key):
 
     state = train_state.TrainState.create(apply_fn=model.apply, params=params, tx=tx)
     return state
+
+def save_imgs(samples, data_dim, sample_dir, random_seed):
+    sample_num = jnp.size(samples, axis=0)
+    for i in range(sample_num):
+        if data_dim[2] == 1:
+            plt.imshow(jnp.take(samples, i, axis=0), cmap='gray')
+            plt.savefig(f"{sample_dir}/seed{random_seed}_{sample_num}samples_img{i}.png")
+        else:
+            plt.imsave(f"{sample_dir}/seed{random_seed}_{sample_num}samples_img{i}.png", jnp.take(samples, i, axis=0))
