@@ -25,12 +25,12 @@ def img_resize(image, resize, size1, size2):
     return image
 
 def load_dataset(dataset, batch_size, resize, new_dim):
-    ds = tfds.load(dataset, as_supervised=True, split='train+test')
+    ds = tfds.load(dataset, as_supervised=True, split='train')
     print(f"Loaded {dataset} dataset", flush=True)
     ds = ds.map(normalize, num_parallel_calls=tf.data.AUTOTUNE)
     if resize:
         ds = ds.map(partial(img_resize, resize=resize, size1=new_dim[0], size2=new_dim[1]), num_parallel_calls=tf.data.AUTOTUNE)
-    ds = tfds.as_numpy(ds.shuffle(60000).batch(batch_size).prefetch(tf.data.AUTOTUNE))
+    ds = tfds.as_numpy(ds.shuffle(50000).batch(batch_size).prefetch(tf.data.AUTOTUNE))
     return ds
 
 def init_UNet(new_dim, model_args, lr_args, key):
