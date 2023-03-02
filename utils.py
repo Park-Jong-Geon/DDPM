@@ -41,8 +41,10 @@ def init_UNet(new_dim, model_args, lr_args, key):
     params = model.init(key, dummy_x, dummy_t)['params']
     
     grad_clip, peak_value, warmup_steps, decay_steps = lr_args
-    lr = optax.warmup_cosine_decay_schedule(init_value=0, peak_value=peak_value, warmup_steps=warmup_steps, decay_steps=decay_steps)
-    tx = optax.chain(optax.clip(grad_clip), optax.adam(lr, b1=0.9, b2=0.999))
+    lr = optax.join_schedules([optax.linear_schedule(init_value=0, end_value=peak_value, transition_steps=warmup_steps),
+                             optax.constant_schedule(peak_value)],
+                              [warmup_steps])
+    tx = optax.chain(optax.clip(grad_clip), optax.adam(lr))
 
     state = train_state.TrainState.create(apply_fn=model.apply, params=params, tx=tx)
     return state
@@ -59,3 +61,7 @@ def save_imgs(samples, data_dim, sample_dir, step, random_seed, sample_num):
                 plt.imsave(f"{sample_dir}/{step}step_seed{random_seed}_{sample_num}samples_{img_num}.png", jnp.take(batch, i, axis=0))
             
             img_num += 1
+
+@jax.jit
+def update_ema(params_ema, params, ema_decay=0.9999):
+    return  jax.tree_map(lambda p_e, p: ema_decay * p_e + (1 - ema_decay) * p, params_ema, params)

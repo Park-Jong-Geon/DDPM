@@ -4,8 +4,7 @@ import jax.numpy as jnp
 import numpy as np
 from flax.training import checkpoints
 from sample_func import execute_many_samples
-from utils import calculate_necessary_values
-from utils import save_imgs
+from utils import calculate_necessary_values, save_imgs, update_ema
 from tqdm import tqdm
 import os
 
@@ -31,12 +30,16 @@ def train(state, x_t, t, eps):
     return loss, state
 
 def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip, 
-                  train_and_sample=False, train_and_sample_params=None):
+                  train_and_sample=False, train_and_sample_params=None,
+                  use_ema=True, ema_decay=0.9999):
     if train_and_sample:
         key_ = key
         device_memory_threshold, sample_period, sample_dir, sample_num, ds_info, random_seed = train_and_sample_params
         data_dim, new_dim, resize = ds_info
         os.makedirs(sample_dir, exist_ok=True)
+    
+    if use_ema:
+        params_ema = state.params
     
     time_steps = jnp.size(beta, axis=0)
     for epoch in range(1, epochs+1):
@@ -50,6 +53,9 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
             t = jax.random.randint(another_key, shape=(x_0.shape[0],), minval=0, maxval=time_steps)
             x_t = forward_process(x_0, t, beta, eps)
             loss, state = train(state, x_t, t, eps)
+            
+            if use_ema:
+                params_ema = update_ema(params_ema, state.params, ema_decay)
 
             loss_per_epoch.append(loss)
 
@@ -67,6 +73,9 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
             pbar.set_postfix({'step' : state.step, 'loss' : loss})
 
         print(f"Loss after {epoch} epoch(s) or {state.step} steps: {np.mean(loss_per_epoch)}", flush=True)
+    
+    if use_ema:
+        state = state.replace(params=params_ema)
     
     if state.step % save_period != 0:
         assert len(os.listdir(ckpt)) < 1e+8

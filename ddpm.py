@@ -46,6 +46,8 @@ parser.add_argument('--warmup_steps', type=int, default=5000)
 parser.add_argument('--decay_steps', type=int, default=50000)
 
 parser.add_argument('--rand_flip', type=bool, default=True)
+parser.add_argument('--use_ema', type=bool, default=True)
+parser.add_argument('--ema_decay', type=float, default=0.9999)
 
 parser.add_argument('--train_and_sample', action='store_true')
 parser.add_argument('--sample_period', type=int, default=10000)
@@ -84,7 +86,7 @@ def print_settings(args):
     print(f"Learning related parameters : grad_clip={args.grad_clip} warmup_steps={args.warmup_steps} decay_steps={args.decay_steps}")
     print(f"Random seed : {args.random_seed}", flush=True)
     print(f"Save path : {args.checkpoint}", flush=True)
-    print(f"Random Horizontal Flip : {args.rand_flip}", flush=True)
+    print(f"Random Horizontal Flip : {args.rand_flip} EMA : {args.use_ema} EMA decay : {args.ema_decay}", flush=True)
 
 # Train
 if args.mode == 'train':
@@ -101,7 +103,8 @@ if args.mode == 'train':
     
     train_and_sample_params = [args.device_memory_threshold, args.sample_period, args.sample_dir, args.sample_num, dataset_info[args.dataset], args.random_seed]
     state = execute_train(args.epochs, ds, state, beta, key, args.checkpoint, args.save_period, args.rand_flip, 
-                          args.train_and_sample, train_and_sample_params)
+                          args.train_and_sample, train_and_sample_params,
+                          args.use_ema, args.ema_decay)
 
     print("")
 
