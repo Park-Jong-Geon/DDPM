@@ -114,8 +114,8 @@ else:
     print(f"Loaded trained model from {args.checkpoint}", flush=True)
     
     samples = execute_many_samples(args.device_memory_threshold, args.sample_num, restored_state, beta, new_dim, key, resize, data_dim)
-        
-    save_imgs(samples, data_dim, args.sample_dir, args.random_seed)
+    
+    save_imgs(samples, data_dim, args.sample_dir, restored_state.step, args.random_seed, args.sample_num)
 '''
     for t in range(args.time_steps):
         if t % 100 == 0:

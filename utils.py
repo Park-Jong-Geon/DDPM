@@ -47,15 +47,15 @@ def init_UNet(new_dim, model_args, lr_args, key):
     state = train_state.TrainState.create(apply_fn=model.apply, params=params, tx=tx)
     return state
 
-def save_imgs(samples, data_dim, sample_dir, random_seed):
+def save_imgs(samples, data_dim, sample_dir, step, random_seed, sample_num):
     img_num = 1
     for batch in samples:
         sample_num = jnp.size(batch, axis=0)
         for i in range(sample_num):
             if data_dim[2] == 1:
                 plt.imshow(jnp.take(batch, i, axis=0), cmap='gray')
-                plt.savefig(f"{sample_dir}/seed{random_seed}_{sample_num}samples_img{img_num}.png")
+                plt.savefig(f"{sample_dir}/{step}step_seed{random_seed}_{sample_num}samples_{img_num}.png")
             else:
-                plt.imsave(f"{sample_dir}/seed{random_seed}_{sample_num}samples_img{img_num}.png", jnp.take(batch, i, axis=0))
+                plt.imsave(f"{sample_dir}/{step}step_seed{random_seed}_{sample_num}samples_{img_num}.png", jnp.take(batch, i, axis=0))
             
             img_num += 1

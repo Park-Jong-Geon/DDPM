@@ -61,7 +61,7 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
             if train_and_sample and (state.step % sample_period == 0):
                 samples = execute_many_samples(device_memory_threshold, sample_num, state, beta, new_dim, key, resize, data_dim)
                 
-                save_imgs(samples, data_dim, sample_dir, random_seed)
+                save_imgs(samples, data_dim, sample_dir, state.step, random_seed, sample_num)
             
             pbar.set_description(f"Training at epoch {epoch}")
             pbar.set_postfix({'step' : state.step, 'loss' : loss})
@@ -76,7 +76,7 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
     if train_and_sample and (state.step % sample_period != 0):
         samples = execute_many_samples(device_memory_threshold, sample_num, state, beta, new_dim, key, resize, data_dim)
         
-        save_imgs(samples, data_dim, sample_dir, random_seed)
+        save_imgs(samples, data_dim, sample_dir, state.step, random_seed, sample_num)
 
     print(f"Finished training after {epoch} epochs or {state.step} steps", flush=True)
 
