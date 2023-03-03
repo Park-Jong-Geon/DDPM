@@ -43,7 +43,7 @@ parser.add_argument('--num_res_blocks', type=int, default=2)
 parser.add_argument('--grad_clip', type=float, default=1)
 # parser.add_argument('--peak_value', type=float, default=2e-4)
 parser.add_argument('--warmup_steps', type=int, default=5000)
-parser.add_argument('--decay_steps', type=int, default=50000)
+parser.add_argument('--decay_steps', type=int, default=50000, help='Required only for cosine warmup lr scheduling')
 
 parser.add_argument('--rand_flip', type=bool, default=True)
 parser.add_argument('--use_ema', type=bool, default=True)
@@ -52,7 +52,7 @@ parser.add_argument('--ema_decay', type=float, default=0.9999)
 parser.add_argument('--train_and_sample', action='store_true')
 parser.add_argument('--sample_period', type=int, default=10000)
 
-parser.add_argument('--device_memory_threshold', type=int, default=1000)
+parser.add_argument('--device_memory_threshold', type=int, default=4000)
 
 args = parser.parse_args()
 
