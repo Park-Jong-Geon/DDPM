@@ -102,9 +102,9 @@ if args.mode == 'train':
         print(f"Checkpoint restored from {args.old_checkpoint}", flush=True)
     
     train_and_sample_params = [args.device_memory_threshold, args.sample_period, args.sample_dir, args.sample_num, dataset_info[args.dataset], args.random_seed]
-    state = execute_train(args.epochs, ds, state, beta, key, args.checkpoint, args.save_period, args.rand_flip, 
-                          args.train_and_sample, train_and_sample_params,
-                          args.use_ema, args.ema_decay)
+    execute_train(args.epochs, ds, state, beta, key, args.checkpoint, args.save_period, args.rand_flip, 
+                    args.train_and_sample, train_and_sample_params,
+                    args.use_ema, args.ema_decay)
 
     print("")
 

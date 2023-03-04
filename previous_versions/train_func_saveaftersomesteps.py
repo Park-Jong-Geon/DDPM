@@ -41,8 +41,6 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
     if use_ema:
         params_ema = state.params
     
-    lowest_epoch_loss = 1e+8
-    
     time_steps = jnp.size(beta, axis=0)
     for epoch in range(1, epochs+1):
         loss_per_epoch = []
@@ -61,24 +59,38 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
                 params_ema = update_ema(params_ema, state.params, ema_decay)
 
             loss_per_epoch.append(loss)
+
+            if state.step % save_period == 0:
+                assert len(os.listdir(ckpt)) < 1e+8
+                checkpoints.save_checkpoint(ckpt_dir=ckpt, target=state, step=state.step, keep=1e+8)
+                print(f"Checkpoint saved after {state.step} steps at {ckpt}", flush=True)
+                
+                if use_ema:
+                    another_state = state.replace(params=params_ema)
+            
+            if train_and_sample and (state.step % sample_period == 0):
+                samples = execute_many_samples(device_memory_threshold, sample_num, state, beta, new_dim, key, resize, data_dim)
+                
+                save_imgs(samples, data_dim, sample_dir, state.step, random_seed, sample_num)
             
             pbar.set_description(f"Training at epoch {epoch}")
             pbar.set_postfix({'step' : state.step, 'loss' : loss})
-        
-        if lowest_epoch_loss > np.mean(loss_per_epoch):
-            assert len(os.listdir(ckpt)) < 1e+8
-            
-            if use_ema:
-                another_state = state.replace(params=params_ema)
-            else:
-                another_state = state
-            
-            checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8)
-            print(f"Checkpoint saved after {another_state.step} steps at {ckpt}", flush=True)
-        
-            samples = execute_many_samples(device_memory_threshold, sample_num, another_state, beta, new_dim, key, resize, data_dim)    
-            save_imgs(samples, data_dim, sample_dir, another_state.step, random_seed, sample_num)
 
-        print(f"Loss after {epoch} epoch(s) or {state.step} steps: {np.mean(loss_per_epoch)}", flush=True)   
+        print(f"Loss after {epoch} epoch(s) or {state.step} steps: {np.mean(loss_per_epoch)}", flush=True)
+    
+    if use_ema:
+        state = state.replace(params=params_ema)
+    
+    if state.step % save_period != 0:
+        assert len(os.listdir(ckpt)) < 1e+8
+        checkpoints.save_checkpoint(ckpt_dir=ckpt, target=state, step=state.step, keep=1e+8)
+        print(f"Checkpoint saved after {state.step} steps at {ckpt}", flush=True)
+    
+    if train_and_sample and (state.step % sample_period != 0):
+        samples = execute_many_samples(device_memory_threshold, sample_num, state, beta, new_dim, key, resize, data_dim)
+        
+        save_imgs(samples, data_dim, sample_dir, state.step, random_seed, sample_num)
 
-    print(f"Finished training after {epoch} epochs or {state.step} steps", flush=True)    
+    print(f"Finished training after {epoch} epochs or {state.step} steps", flush=True)
+
+    return state
