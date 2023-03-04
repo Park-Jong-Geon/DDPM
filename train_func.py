@@ -63,6 +63,9 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
                 assert len(os.listdir(ckpt)) < 1e+8
                 checkpoints.save_checkpoint(ckpt_dir=ckpt, target=state, step=state.step, keep=1e+8)
                 print(f"Checkpoint saved after {state.step} steps at {ckpt}", flush=True)
+                
+                if use_ema:
+                    another_state = state.replace(params=params_ema)
             
             if train_and_sample and (state.step % sample_period == 0):
                 samples = execute_many_samples(device_memory_threshold, sample_num, state, beta, new_dim, key, resize, data_dim)

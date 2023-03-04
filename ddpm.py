@@ -50,7 +50,7 @@ parser.add_argument('--use_ema', type=bool, default=True)
 parser.add_argument('--ema_decay', type=float, default=0.9999)
 
 parser.add_argument('--train_and_sample', action='store_true')
-parser.add_argument('--sample_period', type=int, default=10000)
+parser.add_argument('--sample_period', type=int, default=50000)
 
 parser.add_argument('--device_memory_threshold', type=int, default=4000)
 
