@@ -18,5 +18,5 @@ for line in lines:
 partition = text_name.split('.')
 
 plt.plot(loss)
-plt.axis((0, 1000, 0.025, 0.04))
+plt.axis((0, 1000, 0.01, 0.03))
 plt.savefig(f"{partition[0]}_loss_curve.png")
