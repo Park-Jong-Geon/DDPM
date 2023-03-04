@@ -49,6 +49,7 @@ def init_UNet(new_dim, model_args, lr_args, key):
     state = train_state.TrainState.create(apply_fn=model.apply, params=params, tx=tx)
     return state
 
+# Takes too long
 def save_imgs(samples, data_dim, sample_dir, step, random_seed, sample_num):
     img_num = 1
     for batch in samples:
