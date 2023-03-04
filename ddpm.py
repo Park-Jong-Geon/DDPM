@@ -50,7 +50,7 @@ parser.add_argument('--use_ema', type=bool, default=True)
 parser.add_argument('--ema_decay', type=float, default=0.9999)
 
 parser.add_argument('--train_and_sample', action='store_true')
-parser.add_argument('--sample_period', type=int, default=10000)
+parser.add_argument('--sample_period', type=int, default=50000)
 
 parser.add_argument('--device_memory_threshold', type=int, default=4000)
 
@@ -102,9 +102,9 @@ if args.mode == 'train':
         print(f"Checkpoint restored from {args.old_checkpoint}", flush=True)
     
     train_and_sample_params = [args.device_memory_threshold, args.sample_period, args.sample_dir, args.sample_num, dataset_info[args.dataset], args.random_seed]
-    state = execute_train(args.epochs, ds, state, beta, key, args.checkpoint, args.save_period, args.rand_flip, 
-                          args.train_and_sample, train_and_sample_params,
-                          args.use_ema, args.ema_decay)
+    execute_train(args.epochs, ds, state, beta, key, args.checkpoint, args.save_period, args.rand_flip, 
+                    args.train_and_sample, train_and_sample_params,
+                    args.use_ema, args.ema_decay)
 
     print("")
 
