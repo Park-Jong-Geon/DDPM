@@ -79,7 +79,7 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
             
             if train_and_sample:
                 assert len(os.listdir(ckpt)) < 1e+8
-                checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=step, keep=1e+8, overwrite=True)
+                checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
                 print(f"Checkpoint saved at {ckpt}", flush=True)
 
                 samples = execute_many_samples(device_memory_threshold, sample_num, another_state, beta, new_dim, key_, resize, data_dim)    
@@ -97,7 +97,7 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
             
             if train_and_sample:
                 assert len(os.listdir(ckpt)) < 1e+8
-                checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=step, keep=1e+8, overwrite=True)
+                checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
                 print(f"Checkpoint saved at {ckpt}", flush=True)
 
                 samples = execute_many_samples(device_memory_threshold, sample_num, another_state, beta, new_dim, key_, resize, data_dim)    
@@ -115,7 +115,7 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
         
         if train_and_sample:
             assert len(os.listdir(ckpt)) < 1e+8
-            checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=step, keep=1e+8, overwrite=True)
+            checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
             print(f"Checkpoint saved at {ckpt}", flush=True)
 
             samples = execute_many_samples(device_memory_threshold, sample_num, another_state, beta, new_dim, key_, resize, data_dim)    
