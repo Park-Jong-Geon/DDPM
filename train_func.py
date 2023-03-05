@@ -52,6 +52,7 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
                   use_ema=True, ema_decay=0.9999):
     if train_and_sample:
         key_ = key
+        device_memory_threshold, sample_period, sample_dir, sample_num, ds_info, random_seed = train_and_sample_params
         os.makedirs(sample_dir, exist_ok=True)
     
     if use_ema:

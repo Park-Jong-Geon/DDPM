@@ -1,8 +1,8 @@
 import os
 import matplotlib.pyplot as plt
 
-text_name = 'train_log.txt'
-# text_name = 'test.txt'
+# text_name = 'train_log.txt'
+text_name = 'test.txt'
 
 f = open(text_name)
 lines = f.readlines()
