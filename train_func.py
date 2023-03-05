@@ -7,6 +7,7 @@ from sample_func import execute_many_samples
 from utils import calculate_necessary_values, save_imgs, update_ema
 from tqdm import tqdm
 import os
+from functools import partial
 
 @jax.jit
 def forward_process(x_0, t, beta, eps):
@@ -54,10 +55,10 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
             another_key, key = jax.random.split(key)
             eps = jax.random.normal(key, x_0.shape)
             t = jax.random.randint(another_key, shape=(x_0.shape[0],), minval=0, maxval=time_steps)
-            # x_t = forward_process(x_0, t, beta, eps)
-            x_t = jax.pmap(lambda x_0, t, beta, eps: forward_process(x_0, t, beta, eps))(x_0, t, beta, eps)
-            # loss, state = train(state, x_t, t, eps)
-            loss, state = jax.pmap(lambda state, x_t, t, eps: train(state, x_t, t, eps))(state, x_t, t, eps)
+            x_t = forward_process(x_0, t, beta, eps)
+            # x_t = jax.pmap(lambda x_0, t, eps: forward_process(x_0, t, beta, eps), in_axes=(0, 1, 3))(x_0, t, eps)
+            loss, state = train(state, x_t, t, eps)
+            # loss, state = jax.pmap(lambda state, x_t, t, eps: train(state, x_t, t, eps))(state, x_t, t, eps)
             
             if use_ema:
                 params_ema = update_ema(params_ema, state.params, ema_decay)
@@ -67,7 +68,7 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
             pbar.set_description(f"Training at epoch {epoch}")
             pbar.set_postfix({'step' : state.step, 'loss' : loss})
         
-        if lowest_epoch_loss > np.mean(loss_per_epoch):
+        if (lowest_epoch_loss > np.mean(loss_per_epoch)) :
             assert len(os.listdir(ckpt)) < 1e+8
             
             if use_ema:
