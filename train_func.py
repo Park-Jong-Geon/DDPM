@@ -41,6 +41,7 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
     
     if use_ema:
         params_ema = state.params
+        os.makedirs(f"{ckpt}_no_ema", exist_ok=True)
     
     time_steps = jnp.size(beta, axis=0)
     for epoch in range(1, epochs+1):
