@@ -45,7 +45,7 @@ class resnet_block(nn.Module):
         if x.shape != ft.shape:
             x = nn.Conv(self.ch, (1, 1))(x)
         
-        assert(ft.shape == x.shape)
+        assert ft.shape == x.shape
         return ft + x
 
 # U-Net
