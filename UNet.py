@@ -80,7 +80,7 @@ class UNet(nn.Module):
                 if ft.shape[1] in self.add_attn:
                     # print(f"Attention layer added at resolution {ft.shape[1]}")
                     attn = nn.GroupNorm(num_groups=self.groups)(ft)
-                    attn = nn.SelfAttention(num_heads=self.num_heads)(attn, deterministic=True)
+                    attn = nn.SelfAttention(num_heads=self.num_heads, use_bias=False)(attn, deterministic=True)
                     assert ft.shape == attn.shape
                     #ft += nn.GroupNorm(num_groups=self.groups)(attn)
                     ft += attn
@@ -101,7 +101,7 @@ class UNet(nn.Module):
         # Middle
         ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
         attn = nn.GroupNorm(num_groups=self.groups)(ft)
-        attn = nn.SelfAttention(num_heads=self.num_heads)(attn, deterministic=True)
+        attn = nn.SelfAttention(num_heads=self.num_heads, use_bias=False)(attn, deterministic=True)
         assert ft.shape == attn.shape
         #ft += nn.GroupNorm(num_groups=self.groups)(attn)
         ft += attn
@@ -117,7 +117,7 @@ class UNet(nn.Module):
                 
                 if ft.shape[1] in self.add_attn:
                     attn = nn.GroupNorm(num_groups=self.groups)(ft)
-                    attn = nn.SelfAttention(num_heads=self.num_heads)(ft, deterministic=True)
+                    attn = nn.SelfAttention(num_heads=self.num_heads, use_bias=False)(ft, deterministic=True)
                     assert ft.shape == attn.shape
                     #ft += nn.GroupNorm(num_groups=self.groups)(attn)
                     ft += attn
