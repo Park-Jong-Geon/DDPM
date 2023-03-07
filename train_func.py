@@ -2,6 +2,7 @@ import tensorflow as tf
 import jax
 import jax.numpy as jnp
 import numpy as np
+import flax
 from flax.training import checkpoints
 from sample_func import execute_many_samples
 from utils import calculate_necessary_values, save_imgs, update_ema
@@ -10,11 +11,12 @@ import os
 from functools import partial
 
 @jax.jit
-def forward_process(x_0, t, beta, eps):
+def forward_process(x_0, t, beta, eps):    
     assert x_0.shape == eps.shape
     
     alpha_, sqrt_alpha_, sqrt_1_alpha_ = calculate_necessary_values(beta)
-    x_t = jnp.reshape(jnp.take(sqrt_alpha_, t), (-1, 1, 1, 1)) * x_0 + jnp.reshape(jnp.take(sqrt_1_alpha_, t), (-1, 1, 1, 1)) * eps
+    # x_t = jnp.reshape(jnp.take(sqrt_alpha_, t), (-1, 1, 1, 1)) * x_0 + jnp.reshape(jnp.take(sqrt_1_alpha_, t), (-1, 1, 1, 1)) * eps   
+    x_t = jnp.reshape(sqrt_alpha_[t], (-1, 1, 1, 1)) * x_0 + jnp.reshape(sqrt_1_alpha_[t], (-1, 1, 1, 1)) * eps
     return x_t
 
 @jax.jit
@@ -27,12 +29,13 @@ def train(state, x_t, t, eps):
 
     grad_fn = jax.value_and_grad(loss_fn)
     loss, grads = grad_fn(state.params)
+    
     state = state.apply_gradients(grads=grads)
     return loss, state
 
 def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip, 
                   train_and_sample=False, train_and_sample_params=None,
-                  use_ema=True, ema_decay=0.9999):
+                  use_ema=True, ema_decay=0.9999):    
     if train_and_sample:
         key_ = key
         device_memory_threshold, sample_period, sample_dir, sample_num, ds_info, random_seed = train_and_sample_params
