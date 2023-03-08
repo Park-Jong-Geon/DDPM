@@ -111,7 +111,7 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
                 save_imgs(samples, data_dim, sample_dir, another_state.step, random_seed, sample_num)
             else:
                 assert len(os.listdir(ckpt)) < 1e+8
-                checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=0, keep=1e+8, overwrite=True)
+                checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
                 checkpoints.save_checkpoint(ckpt_dir=f"{ckpt}_no_ema", target=state, step=state.step, keep=1e+8, overwrite=True)
                 print(f"Checkpoint saved at {ckpt} and {ckpt}_no_ema", flush=True)
 
