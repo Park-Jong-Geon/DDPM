@@ -15,7 +15,6 @@ def forward_process(x_0, t, beta, eps):
     assert x_0.shape == eps.shape
     
     alpha_, sqrt_alpha_, sqrt_1_alpha_ = calculate_necessary_values(beta)
-    # x_t = jnp.reshape(jnp.take(sqrt_alpha_, t), (-1, 1, 1, 1)) * x_0 + jnp.reshape(jnp.take(sqrt_1_alpha_, t), (-1, 1, 1, 1)) * eps   
     x_t = jnp.reshape(sqrt_alpha_[t], (-1, 1, 1, 1)) * x_0 + jnp.reshape(sqrt_1_alpha_[t], (-1, 1, 1, 1)) * eps
     return x_t
 
@@ -34,7 +33,27 @@ def train(state, x_t, t, eps):
 
 def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip, 
                   train_and_sample=False, train_and_sample_params=None,
-                  use_ema=True, ema_decay=0.9999):    
+                  use_ema=True, ema_decay=0.9999):
+    def save_ckpt():
+        if use_ema:
+            another_state = state.replace(params=params_ema)
+        else:
+            another_state = state
+        
+        if train_and_sample:
+            assert len(os.listdir(ckpt)) < 1e+8
+            checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
+            checkpoints.save_checkpoint(ckpt_dir=f"{ckpt}_no_ema", target=state, step=state.step, keep=1e+8, overwrite=True)
+            print(f"Checkpoint saved at {ckpt} and {ckpt}_no_ema", flush=True)
+
+            samples = execute_many_samples(device_memory_threshold, sample_num, another_state, beta, new_dim, key_, resize, data_dim)    
+            save_imgs(samples, data_dim, sample_dir, another_state.step, random_seed, sample_num)
+        else:
+            assert len(os.listdir(ckpt)) < 1e+8
+            checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
+            checkpoints.save_checkpoint(ckpt_dir=f"{ckpt}_no_ema", target=state, step=state.step, keep=1e+8, overwrite=True)
+            print(f"Checkpoint saved at {ckpt} and {ckpt}_no_ema", flush=True)
+        
     if train_and_sample:
         key_ = key
         device_memory_threshold, sample_period, sample_dir, sample_num, ds_info, random_seed = train_and_sample_params
@@ -68,24 +87,7 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
             pbar.set_postfix({'step' : state.step, 'loss' : loss})
             
             if state.step % save_period == 0:
-                if use_ema:
-                    another_state = state.replace(params=params_ema)
-                else:
-                    another_state = state
-                
-                if train_and_sample:
-                    assert len(os.listdir(ckpt)) < 1e+8
-                    checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
-                    checkpoints.save_checkpoint(ckpt_dir=f"{ckpt}_no_ema", target=state, step=state.step, keep=1e+8, overwrite=True)
-                    print(f"Checkpoint saved at {ckpt} and {ckpt}_no_ema", flush=True)
-
-                    samples = execute_many_samples(device_memory_threshold, sample_num, another_state, beta, new_dim, key_, resize, data_dim)    
-                    save_imgs(samples, data_dim, sample_dir, another_state.step, random_seed, sample_num)
-                else:
-                    assert len(os.listdir(ckpt)) < 1e+8
-                    checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
-                    checkpoints.save_checkpoint(ckpt_dir=f"{ckpt}_no_ema", target=state, step=state.step, keep=1e+8, overwrite=True)
-                    print(f"Checkpoint saved at {ckpt} and {ckpt}_no_ema", flush=True)
+                save_ckpt()
         
         if epoch == 1:
             lowest_epoch_loss = np.mean(loss_per_epoch)
@@ -94,44 +96,9 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
           
         if lowest_epoch_loss > np.mean(loss_per_epoch):
             lowest_epoch_loss = np.mean(loss_per_epoch)
-            
-            if use_ema:
-                another_state = state.replace(params=params_ema)
-            else:
-                another_state = state
-            
-            if train_and_sample:
-                assert len(os.listdir(ckpt)) < 1e+8
-                checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
-                checkpoints.save_checkpoint(ckpt_dir=f"{ckpt}_no_ema", target=state, step=state.step, keep=1e+8, overwrite=True)
-                print(f"Checkpoint saved at {ckpt} and {ckpt}_no_ema", flush=True)
-
-                samples = execute_many_samples(device_memory_threshold, sample_num, another_state, beta, new_dim, key_, resize, data_dim)    
-                save_imgs(samples, data_dim, sample_dir, another_state.step, random_seed, sample_num)
-            else:
-                assert len(os.listdir(ckpt)) < 1e+8
-                checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
-                checkpoints.save_checkpoint(ckpt_dir=f"{ckpt}_no_ema", target=state, step=state.step, keep=1e+8, overwrite=True)
-                print(f"Checkpoint saved at {ckpt} and {ckpt}_no_ema", flush=True)
+            save_ckpt()
 
     if state.step % save_period != 0:
-        if use_ema:
-            another_state = state.replace(params=params_ema)
-        else:
-            another_state = state
-        
-        if train_and_sample:
-            assert len(os.listdir(ckpt)) < 1e+8
-            checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
-            checkpoints.save_checkpoint(ckpt_dir=f"{ckpt}_no_ema", target=state, step=state.step, keep=1e+8, overwrite=True)
-            print(f"Checkpoint saved at {ckpt} and {ckpt}_no_ema", flush=True)
-
-            samples = execute_many_samples(device_memory_threshold, sample_num, another_state, beta, new_dim, key_, resize, data_dim)    
-            save_imgs(samples, data_dim, sample_dir, another_state.step, random_seed, sample_num)
-        else:
-            assert len(os.listdir(ckpt)) < 1e+8
-            checkpoints.save_checkpoint(ckpt_dir=ckpt, target=another_state, step=another_state.step, keep=1e+8, overwrite=True)
-            checkpoints.save_checkpoint(ckpt_dir=f"{ckpt}_no_ema", target=state, step=state.step, keep=1e+8, overwrite=True)
-            print(f"Checkpoint saved at {ckpt} and {ckpt}_no_ema", flush=True)
+        save_ckpt()
             
     print(f"Finished training after {epoch} epochs or {state.step} steps", flush=True)    
