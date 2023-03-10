@@ -29,7 +29,6 @@ def train(state, x_t, t, eps):
 
     grad_fn = jax.value_and_grad(loss_fn)
     loss, grads = grad_fn(state.params)
-    
     state = state.apply_gradients(grads=grads)
     return loss, state
 

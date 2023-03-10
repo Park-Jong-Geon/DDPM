@@ -48,47 +48,6 @@ class resnet_block(nn.Module):
         assert ft.shape == x.shape
         return ft + x
 
-def contract_inner(x, y):
-  """tensordot(x, y, 1)."""
-  x_chars = list(string.ascii_lowercase[:len(x.shape)])
-  y_chars = list(string.ascii_uppercase[:len(y.shape)])
-  assert len(x_chars) == len(x.shape) and len(y_chars) == len(y.shape)
-  y_chars[0] = x_chars[-1]  # first axis of y and last of x get summed
-  out_chars = x_chars[:-1] + y_chars[1:]
-  return _einsum(x_chars, y_chars, out_chars, x, y)
-
-def nin(x, *, name, num_units, init_scale=1.):
-  with tf.variable_scope(name):
-    in_dim = int(x.shape[-1])
-    W = tf.get_variable('W', shape=[in_dim, num_units], initializer=default_init(scale=init_scale), dtype=DEFAULT_DTYPE)
-    b = tf.get_variable('b', shape=[num_units], initializer=tf.constant_initializer(0.), dtype=DEFAULT_DTYPE)
-    y = contract_inner(x, W) + b
-    assert y.shape == x.shape[:-1] + [num_units]
-    return y
-
-# Attention block
-class SelfAttention(nn.Module):
-    num_groups: int
-    
-    @nn.compact
-    def __call__(self, x):
-        B, H, W, C = x.shape
-        ft = nn.GroupNorm(num_groups=self.num_groups)(x)
-        q = nn.Dense(C)(ft)
-        k = nn.Dense(C)(ft)
-        v = nn.Dense(C)(ft)
-        
-        w = jnp.einsum('bhwc,bHWc->bhwHW', q, k) * (C ** (-0.5))
-        w = jnp.reshape(w, [B, H, W, H*W])
-        w = nn.softmax(w)
-        w = jnp.reshape(w, [B, H, W, H, W])
-
-        attn = jnp.einsum('bhwHW,bHWc->bhwc', w, v)
-        attn = nn.Dense(C)(attn)
-
-        assert x.shape == attn.shape
-        return x + attn
-
 # U-Net
 class UNet(nn.Module):
     ch: int
@@ -119,7 +78,12 @@ class UNet(nn.Module):
                 ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
                 
                 if ft.shape[1] in self.add_attn:
-                    ft = SelfAttention(num_groups=self.groups)(ft)
+                    # print(f"Attention layer added at resolution {ft.shape[1]}")
+                    attn = nn.GroupNorm(num_groups=self.groups)(ft)
+                    attn = nn.SelfAttention(num_heads=self.num_heads, use_bias=False)(attn, deterministic=True)
+                    assert ft.shape == attn.shape
+                    #ft += nn.GroupNorm(num_groups=self.groups)(attn)
+                    ft += attn
                 
                 residual.append(ft)
             
@@ -131,7 +95,10 @@ class UNet(nn.Module):
                 
         # Middle
         ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
-        ft = SelfAttention(num_groups=self.groups)(ft)
+        attn = nn.GroupNorm(num_groups=self.groups)(ft)
+        attn = nn.SelfAttention(num_heads=self.num_heads, use_bias=False)(attn, deterministic=True)
+        assert ft.shape == attn.shape
+        ft += attn
         ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
         # print(f"Feature dimension at 'middle' part: {ft.shape}")
         
@@ -143,7 +110,10 @@ class UNet(nn.Module):
                 ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
                 
                 if ft.shape[1] in self.add_attn:
-                    ft = SelfAttention(num_groups=self.groups)(ft)
+                    attn = nn.GroupNorm(num_groups=self.groups)(ft)
+                    attn = nn.SelfAttention(num_heads=self.num_heads, use_bias=False)(ft, deterministic=True)
+                    assert ft.shape == attn.shape
+                    ft += attn
             
             if i != scale_len-1:
                 B, H, W, C = ft.shape
