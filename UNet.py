@@ -48,24 +48,6 @@ class resnet_block(nn.Module):
         assert ft.shape == x.shape
         return ft + x
 
-def contract_inner(x, y):
-  """tensordot(x, y, 1)."""
-  x_chars = list(string.ascii_lowercase[:len(x.shape)])
-  y_chars = list(string.ascii_uppercase[:len(y.shape)])
-  assert len(x_chars) == len(x.shape) and len(y_chars) == len(y.shape)
-  y_chars[0] = x_chars[-1]  # first axis of y and last of x get summed
-  out_chars = x_chars[:-1] + y_chars[1:]
-  return _einsum(x_chars, y_chars, out_chars, x, y)
-
-def nin(x, *, name, num_units, init_scale=1.):
-  with tf.variable_scope(name):
-    in_dim = int(x.shape[-1])
-    W = tf.get_variable('W', shape=[in_dim, num_units], initializer=default_init(scale=init_scale), dtype=DEFAULT_DTYPE)
-    b = tf.get_variable('b', shape=[num_units], initializer=tf.constant_initializer(0.), dtype=DEFAULT_DTYPE)
-    y = contract_inner(x, W) + b
-    assert y.shape == x.shape[:-1] + [num_units]
-    return y
-
 # Attention block
 class SelfAttention(nn.Module):
     num_groups: int
