@@ -130,6 +130,7 @@ class UNet(nn.Module):
             # print(f"Feature dimension at 'downsampling' part: {ft.shape}")
                 
         # Middle
+        assert scale == self.scale[-1]
         ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
         ft = SelfAttention(num_groups=self.groups)(ft)
         ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
