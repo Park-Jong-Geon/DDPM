@@ -2,6 +2,7 @@ import jax
 import jax.numpy as jnp
 import flax.linen as nn
 import flax.linen.initializers as init
+from typing import Callable
 
 # Architecture details were adopted from the original DDPM implementation
 
@@ -48,6 +49,19 @@ class resnet_block(nn.Module):
         assert ft.shape == x.shape
         return ft + x
 
+# NiN layer used for SelfAttention layer
+class nin(nn.Module):
+    ch: int
+    kernel_init: Callable = nn.initializers.xavier_normal()
+    bias_init: Callable = nn.initializers.zeros_init()
+    
+    @nn.compact
+    def __call__(self, x):
+        W = self.param('kernel', self.kernel_init, (x.shape[-1], self.ch))
+        b = self.param('bias', self.bias_init, (self.ch,))
+        
+        return jnp.tensordot(x, W, 1) + b
+
 # Attention block
 class SelfAttention(nn.Module):
     num_groups: int
@@ -56,9 +70,9 @@ class SelfAttention(nn.Module):
     def __call__(self, x):
         B, H, W, C = x.shape
         ft = nn.GroupNorm(num_groups=self.num_groups)(x)
-        q = nn.Dense(C)(ft)
-        k = nn.Dense(C)(ft)
-        v = nn.Dense(C)(ft)
+        q = nin(C)(ft)
+        k = nin(C)(ft)
+        v = nin(C)(ft)
         
         w = jnp.einsum('bhwc,bHWc->bhwHW', q, k) * (C ** (-0.5))
         w = jnp.reshape(w, [B, H, W, H*W])
@@ -66,7 +80,7 @@ class SelfAttention(nn.Module):
         w = jnp.reshape(w, [B, H, W, H, W])
 
         attn = jnp.einsum('bhwHW,bHWc->bhwc', w, v)
-        attn = nn.Dense(C)(attn)
+        attn = nin(C)(attn)
 
         assert x.shape == attn.shape
         return x + attn
@@ -82,7 +96,7 @@ class UNet(nn.Module):
     num_res_blocks : int
     
     @nn.compact
-    def __call__(self, x, t):        
+    def __call__(self, x, t):       
         t_emb = sin_embedding(self.ch)(t)
         
         # Why are the following two lines necessary?
@@ -96,6 +110,7 @@ class UNet(nn.Module):
         assert ft.shape[1] == ft.shape[2]
         scale_len = len(self.scale)
         residual = [ft]
+        
         for i, scale in enumerate(self.scale):
             for j in range(self.num_res_blocks):
                 ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
@@ -109,6 +124,7 @@ class UNet(nn.Module):
                 #ft = nn.avg_pool(ft, (2, 2), (2, 2))
                 ft = nn.Conv(self.ch * scale, (3, 3), 2, (1, 1))(ft)
                 residual.append(ft)
+            
             # print(f"Feature dimension at 'downsampling' part: {ft.shape}")
                 
         # Middle

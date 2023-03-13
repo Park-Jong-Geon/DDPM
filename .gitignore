@@ -8,3 +8,5 @@ cifar10_png*
 train_results/*
 *.txt
 FID/*
+letsdoit*
+graph.py
