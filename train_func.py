@@ -36,13 +36,11 @@ def execute_train(epochs, ds, state, beta, key, ckpt, save_period, rand_flip,
                   use_ema=True, ema_decay=0.9999):    
     def save_ckpt():
         no_ema = state
-        no_ema = flax.jax_utils.unreplicate(no_ema)
         
         assert (len(os.listdir(ckpt)) + 10) < 1e+8
         
         if use_ema:
             ema = state.replace(params=params_ema)
-            ema = flax.jax_utils.unreplicate(ema)
             checkpoints.save_checkpoint(ckpt_dir=ckpt, target=ema, step=ema.step, keep=1e+8, overwrite=True)
             checkpoints.save_checkpoint(ckpt_dir=f"{ckpt}_no_ema", target=no_ema, step=no_ema.step, keep=1e+8, overwrite=True)
         else:
