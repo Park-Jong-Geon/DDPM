@@ -44,7 +44,7 @@ class resnet_block(nn.Module):
         ft = nn.Conv(self.ch, (3, 3))(ft)
         
         if x.shape != ft.shape:
-            x = nn.Conv(self.ch, (1, 1))(x)
+            x = nn.Conv(self.ch, (3, 3))(x)
         
         assert ft.shape == x.shape
         return ft + x
@@ -69,21 +69,25 @@ class SelfAttention(nn.Module):
     @nn.compact
     def __call__(self, x):
         B, H, W, C = x.shape
-        ft = nn.GroupNorm(num_groups=self.num_groups)(x)
-        q = nin(C)(ft)
-        k = nin(C)(ft)
-        v = nin(C)(ft)
+        h = nn.GroupNorm(num_groups=self.num_groups)(x)
+        '''
+        q = nin(C)(h)
+        k = nin(C)(h)
+        v = nin(C)(h)
+        '''
+        qkv = nn.Conv(3*C, (3, 3))(h)
+        q, k, v = jnp.split(qkv, 3, axis=-1)
         
         w = jnp.einsum('bhwc,bHWc->bhwHW', q, k) * (C ** (-0.5))
         w = jnp.reshape(w, [B, H, W, H*W])
-        w = nn.softmax(w)
+        w = nn.softmax(w, axis=-1)
         w = jnp.reshape(w, [B, H, W, H, W])
 
-        attn = jnp.einsum('bhwHW,bHWc->bhwc', w, v)
-        attn = nin(C)(attn)
+        h = jnp.einsum('bhwHW,bHWc->bhwc', w, v)
+        h = nin(C)(h)
 
-        assert x.shape == attn.shape
-        return x + attn
+        assert x.shape == h.shape
+        return x + h
 
 # U-Net
 class UNet(nn.Module):
@@ -147,7 +151,7 @@ class UNet(nn.Module):
             if i != scale_len-1:
                 B, H, W, C = ft.shape
                 ft = jax.image.resize(ft, (B, 2*H, 2*W, C), "nearest")
-                ft = nn.Conv(self.ch * scale, (3, 3))(ft)
+                ft = nn.Conv(C, (3, 3))(ft)
             
             # print(f"Feature dimension at 'upsampling' part: {ft.shape}")
         
