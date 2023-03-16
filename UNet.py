@@ -75,9 +75,9 @@ class SelfAttention(nn.Module):
         k = nin(C)(h)
         v = nin(C)(h)
         '''
-        q = nn.Conv(C, (3, 3), use_bias=True)(h)
-        k = nn.Conv(C, (3, 3), use_bias=True)(h)
-        v = nn.Conv(C, (3, 3), use_bias=True)(h)
+        q = nn.Conv(C, (3, 3), use_bias=False)(h)
+        k = nn.Conv(C, (3, 3), use_bias=False)(h)
+        v = nn.Conv(C, (3, 3), use_bias=False)(h)
         
         w = jnp.einsum('bhwc,bHWc->bhwHW', q, k) * (C ** (-0.5))
         w = jnp.reshape(w, [B, H, W, H*W])
