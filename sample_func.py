@@ -24,23 +24,12 @@ def backward_process(x_t, t, eps_theta, beta, eps):
 @jax.jit
 def apply_trained_model(trained_state, x_t, t):
     return trained_state.apply_fn({'params': trained_state.params}, x_t, t)
-'''
-@jax.jit
-def img_rescale(imgs):
-    assert len(imgs.shape) == 4
-    min = jnp.expand_dims(jnp.min(imgs, axis=(1, 2)), (1, 2))
-    imgs = imgs - min
-    max = jnp.expand_dims(jnp.max(imgs, axis=(1, 2)), (1, 2))
-    imgs = jnp.uint8(imgs / max * 255)
-    return imgs
-'''
 
 @jax.jit
 def img_rescale(imgs):
     imgs = jnp.clip(imgs, a_min=-1, a_max=1)
-    imgs = (imgs + 1) / 2 * 255
-    imgs = jnp.uint8(imgs)
-    return imgs
+    imgs = jnp.around((imgs + 1) / 2 * 255)
+    return jnp.uint8(imgs)
 
 '''
 def execute_single_sample_at_all_steps(trained_state, beta, new_dim, key, resize, data_dim):

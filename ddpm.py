@@ -33,7 +33,7 @@ parser.add_argument('--beta_0', type=float, default=0.0001)
 parser.add_argument('--beta_T', type=float, default=0.02)
 
 parser.add_argument('--ch', type=int, default=128)
-parser.add_argument('--groups', type=int, default=8)
+parser.add_argument('--groups', type=int, default=32)
 parser.add_argument('--scale', type=int, default=[1, 2, 2, 2], nargs="+")
 parser.add_argument('--add_attn', type=int, default=[16,], nargs="+")
 parser.add_argument('--dropout_rate', type=float, default=0.1)

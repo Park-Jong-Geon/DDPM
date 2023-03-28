@@ -37,13 +37,13 @@ class resnet_block(nn.Module):
         ft = nn.Conv(self.ch, (3, 3))(ft)
         
         t_emb = nn.Dense(self.ch)(nn.silu(t_emb))
-        ft = ft + jnp.expand_dims(t_emb, (1, 2))
+        ft += jnp.expand_dims(t_emb, (1, 2))
 
         ft = nn.silu(nn.GroupNorm(num_groups=self.groups)(ft))
         ft = nn.Dropout(rate=self.dropout_rate, deterministic=True)(ft)
         ft = nn.Conv(self.ch, (3, 3))(ft)
         
-        if x.shape != ft.shape:
+        if x.shape[-1] != self.ch:
             x = nn.Conv(self.ch, (3, 3))(x)
         
         assert ft.shape == x.shape
@@ -70,14 +70,10 @@ class SelfAttention(nn.Module):
     def __call__(self, x):
         B, H, W, C = x.shape
         h = nn.GroupNorm(num_groups=self.num_groups)(x)
-        '''
+        
         q = nin(C)(h)
         k = nin(C)(h)
         v = nin(C)(h)
-        '''
-        q = nn.Conv(C, (3, 3), use_bias=False)(h)
-        k = nn.Conv(C, (3, 3), use_bias=False)(h)
-        v = nn.Conv(C, (3, 3), use_bias=False)(h)
         
         w = jnp.einsum('bhwc,bHWc->bhwHW', q, k) * (C ** (-0.5))
         w = jnp.reshape(w, [B, H, W, H*W])
@@ -85,10 +81,8 @@ class SelfAttention(nn.Module):
         w = jnp.reshape(w, [B, H, W, H, W])
 
         h = jnp.einsum('bhwHW,bHWc->bhwc', w, v)
-        '''
+        
         h = nin(C)(h)
-        '''
-        h = nn.Conv(C, (3, 3))(h)
         
         assert x.shape == h.shape
         return x + h
@@ -163,6 +157,6 @@ class UNet(nn.Module):
         
         # Terminal layer
         ft = nn.silu(nn.GroupNorm(num_groups=self.groups)(ft))
-        out = nn.Conv(x.shape[3], (3, 3))(ft)
+        out = nn.Conv(x.shape[-1], (3, 3))(ft)
         
         return out
