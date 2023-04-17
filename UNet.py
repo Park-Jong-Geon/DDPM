@@ -37,14 +37,14 @@ class resnet_block(nn.Module):
         ft = nn.Conv(self.ch, (3, 3))(ft)
         
         t_emb = nn.Dense(self.ch)(nn.silu(t_emb))
-        ft += jnp.expand_dims(t_emb, (1, 2))
+        ft += t_emb[:, None, None, :]
 
         ft = nn.silu(nn.GroupNorm(num_groups=self.groups)(ft))
         ft = nn.Dropout(rate=self.dropout_rate, deterministic=True)(ft)
         ft = nn.Conv(self.ch, (3, 3))(ft)
         
         if x.shape[-1] != self.ch:
-            x = nn.Conv(self.ch, (3, 3))(x)
+            x = nn.Conv(self.ch, (1, 1))(x)
         
         assert ft.shape == x.shape
         return ft + x
@@ -94,7 +94,7 @@ class UNet(nn.Module):
     scale: tuple
     add_attn: tuple
     dropout_rate: float
-    num_heads: int
+    # num_heads: int
     num_res_blocks : int
     
     @nn.compact
@@ -122,11 +122,10 @@ class UNet(nn.Module):
                 
                 residual.append(ft)
             
-            if i != scale_len-1:
+            if i < scale_len-1:
                 #ft = nn.avg_pool(ft, (2, 2), (2, 2))
                 ft = nn.Conv(self.ch * scale, (3, 3), 2, (1, 1))(ft)
                 residual.append(ft)
-            
             # print(f"Feature dimension at 'downsampling' part: {ft.shape}")
                 
         # Middle
@@ -146,11 +145,10 @@ class UNet(nn.Module):
                 if ft.shape[1] in self.add_attn:
                     ft = SelfAttention(num_groups=self.groups)(ft)
             
-            if i != scale_len-1:
+            if i < scale_len-1:
                 B, H, W, C = ft.shape
                 ft = jax.image.resize(ft, (B, 2*H, 2*W, C), "nearest")
                 ft = nn.Conv(C, (3, 3))(ft)
-            
             # print(f"Feature dimension at 'upsampling' part: {ft.shape}")
         
         assert not residual

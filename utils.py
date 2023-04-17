@@ -1,68 +1,122 @@
+import os, glob, shutil
+from time import ctime, time
+from functools import partial
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import jax
 import jax.numpy as jnp
-from flax.training import train_state
-import optax
-from UNet import UNet
-from functools import partial
-from matplotlib import pyplot as plt
+import flax
+from flax.training import checkpoints
+from PIL import Image
+from config import config
 
-@jax.jit
-def calculate_necessary_values(beta):
-    alpha_ = jnp.cumprod(1.-beta)
-    sqrt_alpha_ = jnp.sqrt(alpha_)
-    sqrt_1_alpha_ = jnp.sqrt(1.-alpha_)
+class utils(config):
+    def __init__(self):
+        super().__init__()
     
-    return alpha_, sqrt_alpha_, sqrt_1_alpha_
-
-def normalize(image, label):
-    image = 2 * (image / 255) - 1
-    return image
-
-def img_resize(image, resize, size1, size2):
-    image = tf.image.resize(image, [size1, size2])
-    return image
-
-def load_dataset(dataset, batch_size, resize, new_dim):
-    ds = tfds.load(dataset, as_supervised=True, split='train')
-    print(f"Loaded {dataset} dataset", flush=True)
-    ds = ds.map(normalize, num_parallel_calls=tf.data.AUTOTUNE)
-    if resize:
-        ds = ds.map(partial(img_resize, resize=resize, size1=new_dim[0], size2=new_dim[1]), num_parallel_calls=tf.data.AUTOTUNE)
-    ds = tfds.as_numpy(ds.shuffle(50000).batch(batch_size).prefetch(tf.data.AUTOTUNE))
-    return ds
-
-def init_UNet(new_dim, model_args, lr_args, key):
-    dummy_x = jnp.ones(shape=(1, *new_dim))
-    dummy_t = jnp.ones(shape=(1, ))
+    @tf.autograph.experimental.do_not_convert
+    def normalize(self, image, label):
+        return 2 * (image / 255) - 1
     
-    model = UNet(*model_args)
-    params = model.init(key, dummy_x, dummy_t)['params']
+    @tf.autograph.experimental.do_not_convert
+    def augmentation(self, image, label):
+        if self.rand_flip:
+            image = tf.image.random_flip_left_right(image)
+        return image, label
     
-    grad_clip, peak_value, warmup_steps, decay_steps = lr_args
-    lr = optax.join_schedules([optax.linear_schedule(init_value=0, end_value=peak_value, transition_steps=warmup_steps),
-                             optax.constant_schedule(peak_value)],
-                              [warmup_steps])
-    tx = optax.chain(optax.clip(grad_clip), optax.adam(lr))
+    def load_dataset(self, dataset, batch):
+        ds = tfds.load(dataset, as_supervised=True, split='train')
+        
+        ds = ds.shuffle(self.dataset_size)
+        
+        ds = ds.repeat()
+        
+        ds = ds.map(self.augmentation, num_parallel_calls=tf.data.AUTOTUNE)
+        ds = ds.map(self.normalize, num_parallel_calls=tf.data.AUTOTUNE)
+        if self.new_dim != None:
+            ds = ds.map(lambda image: tf.image.resize(image, [*self.new_dim[0:2]]), num_parallel_calls=tf.data.AUTOTUNE)
+        
+        assert self.batch % self.devices == 0
+        ds = ds.batch(self.batch // self.devices)
+        ds = ds.batch(self.devices)
+        
+        ds = ds.prefetch(tf.data.AUTOTUNE)
+        
+        ds = map(lambda data: jax.tree_map(lambda x: x._numpy(), data), ds)
+        ds = flax.jax_utils.prefetch_to_device(ds, 2)
+  
+        print(f"Loaded {dataset} dataset", flush=True)
+        return ds
 
-    state = train_state.TrainState.create(apply_fn=model.apply, params=params, tx=tx)
-    return state
+    def save_imgs(self, samples, step):
+        sample_num = jnp.size(samples, axis=0)
+        for i, sample in enumerate(samples):
+            Image.fromarray(sample).save(f"{self.sample_dir}/{step}step_seed{self.random_seed}_{i+1}_of_{sample_num}.png")          
 
-# Takes too long
-def save_imgs(samples, data_dim, sample_dir, step, random_seed, sample_num):
-    img_num = 1
-    for batch in samples:
-        sample_num = jnp.size(batch, axis=0)
-        for i in range(sample_num):
-            if data_dim[2] == 1:
-                plt.imshow(jnp.take(batch, i, axis=0), cmap='gray')
-                plt.savefig(f"{sample_dir}/{step}step_seed{random_seed}_{sample_num}samples_{img_num}.png")
-            else:
-                plt.imsave(f"{sample_dir}/{step}step_seed{random_seed}_{sample_num}samples_{img_num}.png", jnp.take(batch, i, axis=0))
+    def load_ckpt(self):
+        assert self.ckpt_dir != None
+        if not os.path.exists(self.ckpt_dir):
+            raise Exception(f"Directory {dir} does not exist")
+        
+        if self.ckpt_ema_dir != None:
+            if not os.path.exists(self.ckpt_ema_dir):
+                raise Exception(f"Directory {dir} does not exist")
+            return checkpoints.restore_checkpoint(ckpt_dir=self.ckpt_dir, target=self.state), checkpoints.restore_checkpoint(ckpt_dir=self.ckpt_ema_dir, target=self.state)
+        else:
+            return checkpoints.restore_checkpoint(ckpt_dir=self.ckpt_dir, target=self.state), None
+        
+    def save_ckpt(self, state, ema_state):
+        assert (len(os.listdir(self.save_dir)) + 10) < 1e+8
+        self.create_dir(f"{self.save_dir}_no_ema")
+        
+        checkpoints.save_checkpoint(ckpt_dir=f"{self.save_dir}_no_ema", target=state, step=state.step, keep=1e+8, overwrite=False)
+        checkpoints.save_checkpoint(ckpt_dir=self.save_dir, target=ema_state, step=ema_state.step, keep=1e+8, overwrite=False)
+        
+        print(f"Checkpoint saved at {self.save_dir} and {self.save_dir}_no_ema", flush=True)
+      
+    def graph(self, txt_title, keyword):
+        assert keyword == 'FID'
+        f = open(txt_title)
+        lines = f.readlines()
+        f.close()
+        
+        values = []
+        for line in lines:
+            if line == '\n':
+                continue
+            strings = line.split()
             
-            img_num += 1
+            if keyword in strings:
+                values.append(float(strings[-1]))
 
-@jax.jit
-def update_ema(params_ema, params, ema_decay=0.9999):
-    return  jax.tree_map(lambda p_e, p: ema_decay * p_e + (1 - ema_decay) * p, params_ema, params)
+        plt.plot(values)
+        plt.axis((0, len(values), min(values), max(values)))
+        plt.savefig(f"{txt_title}_{keyword}_curve.png")
+    
+    def create_dir(self, dir):
+        try:
+            if not os.path.exists(dir):
+                os.makedirs(dir)
+        except OSError:
+            print('Error: Creating directory. ' + dir)
+    
+    def clear_dir(self, dir):
+        files = glob.glob(f"{dir}/*")
+        for f in files:
+            os.remove(f)
+    
+    def move_files(self, dir1, dir2):
+        files = os.listdir(dir1)
+        for f in files:
+            shutil.move(os.path.join(dir1, f), dir2)
+    
+    def print_config(self):
+        print(ctime(time()), flush=True)
+        print(f"dataset {self.dataset} lr {self.lr} batch {self.batch} step {self.step}", flush=True)
+        print(f"Beta scheduling : time_steps {self.time_steps} beta_0 {self.beta_0} beta_T {self.beta_T}", flush=True)
+        print(f"U-Net Parameters : ch {self.ch} groups {self.groups} scale {tuple(self.scale)} add_attn {tuple(self.add_attn)} dropout_rate {self.dropout_rate} num_res_blocks {self.num_res_blocks}", flush=True)
+        print(f"Learning related parameters : grad_clip {self.grad_clip} warmup_steps {self.warmup_steps} EMA decay {self.ema_decay} Random Horizontal Flip {self.rand_flip}")
+        print(f"Save path : {self.save_dir}", flush=True)
+        if self.ckpt_dir != None:
+            print(f"Checkpoint loaded from : {self.ckpt_dir}", flush=True)
+        

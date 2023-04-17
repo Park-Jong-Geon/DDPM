@@ -1,12 +1,7 @@
 __pycache__/*
-save/*
-sample/*
-cifar10_png*
 *.tar.gz
 *checkpoint*
+*jpg*
 *png*
-train_results/*
-*.txt
-FID/*
-letsdoit*
-graph.py
+*last_shot*
+*boingkiri*
