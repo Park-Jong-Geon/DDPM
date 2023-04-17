@@ -21,6 +21,7 @@ if __name__ == "__main__":
                 _DDPM.ckpt_ema_dir = _DDPM.save_dir
                 _DDPM.ckpt_dir = f"{_DDPM.save_dir}_no_ema"
         trained_ckpt, trained_ckpt_ema = _DDPM.load_ckpt()
+        
         _DDPM.sample(trained_ckpt_ema, 50000)
         
         print(_DDPM.fid.calculate_fid('fid_stats_cifar10_train.npz', _DDPM.sample_dir))

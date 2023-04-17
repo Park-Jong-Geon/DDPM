@@ -28,23 +28,24 @@ class DDPM(utils):
         self.sqrt_1_alpha_ = jnp.sqrt(1.-self.alpha_)
 
         # Initialize the model
-        # model = UNet()
-        model = UNet(self.ch, self.groups, self.scale, self.add_attn, self.dropout_rate, self.num_res_blocks)
+        # self.model = UNet()
+        self.model = UNet(self.ch, self.groups, self.scale, self.add_attn, self.dropout_rate, self.num_res_blocks)
+        
         self.img_dim = self.data_dim if self.new_dim == None else self.new_dim
-        params = model.init(self.key, jnp.ones(shape=(1, *self.img_dim)), jnp.ones(shape=(1, )), False)['params']
-
+        params = self.model.init({'params': self.key}, jnp.ones(shape=(1, *self.img_dim)), jnp.ones(shape=(1, )), False)['params']
+        
         scheduled_lr = optax.linear_schedule(init_value=0, end_value=self.lr, transition_steps=self.warmup_steps)
         tx = optax.chain(optax.clip(self.grad_clip), optax.adam(scheduled_lr))
         
-        self.state = train_state.TrainState.create(apply_fn=model.apply, params=params, tx=tx)
+        self.state = train_state.TrainState.create(apply_fn=self.model.apply, params=params, tx=tx)
         self.ema_state = self.state
         
         self.fid = FID(self.random_seed)
 
-        def update(state, ema_state, x_0, t, eps):
-            
+        def update(state, ema_state, x_0, t, eps, dropout_key):
+                        
             def loss_fn(params, x_t, t, eps):
-                eps_theta = state.apply_fn({'params': params}, x_t, t, False, rngs={'dropout': self.random_seed})
+                eps_theta = self.model.apply({'params': params}, x_t, t, True, rngs={'dropout': dropout_key})
                 loss = jnp.mean((eps - eps_theta) ** 2)
                 return loss
             
@@ -62,7 +63,7 @@ class DDPM(utils):
             return loss, state, ema_state
 
         def apply_model(state, x, t):
-            return state.apply_fn({'params': state.params}, x, t, True)
+            return self.model.apply({'params': state.params}, x, t, False)
 
         def backward_process(x_t, t, eps_theta, eps):
             beta_t = self.beta[t]
@@ -89,11 +90,12 @@ class DDPM(utils):
         
         for x_0 in (pbar := tqdm(ds)):
             another_key, key = jax.random.split(key)
+            dropout_key = jax.random.split(key, self.devices)
             
             t = jax.random.randint(key=another_key, shape=x_0.shape[0:2], minval=0, maxval=self.time_steps)
             eps = jax.random.normal(key=key, shape=x_0.shape)
             
-            loss, self.state, self.ema_state = self.update(self.state, self.ema_state, x_0, t, eps)
+            loss, self.state, self.ema_state = self.update(self.state, self.ema_state, x_0, t, eps, dropout_key)
 
             # cum_loss = jnp.append(cum_loss, loss[0])
             pbar.set_postfix({'step' : self.ema_state.step[0], 'loss' : loss[0]})

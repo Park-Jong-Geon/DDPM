@@ -32,7 +32,7 @@ class resnet_block(nn.Module):
     dropout_rate: float
     
     @nn.compact
-    def __call__(self, x, t_emb, dropout_flag):
+    def __call__(self, x, t_emb, training):
         ft = nn.swish(nn.GroupNorm(num_groups=self.groups)(x))
         ft = nn.Conv(self.ch, (3, 3))(ft)
         
@@ -40,7 +40,7 @@ class resnet_block(nn.Module):
         ft += t_emb[:, None, None, :]
 
         ft = nn.swish(nn.GroupNorm(num_groups=self.groups)(ft))
-        ft = nn.Dropout(rate=self.dropout_rate, deterministic=dropout_flag)(ft)
+        ft = nn.Dropout(rate=self.dropout_rate, deterministic=not training)(ft)
         ft = nn.Conv(self.ch, (3, 3))(ft)
         
         if x.shape[-1] != self.ch:
@@ -97,7 +97,7 @@ class UNet(nn.Module):
     num_res_blocks : int
     
     @nn.compact
-    def __call__(self, x, t, dropout_flag):       
+    def __call__(self, x, t, training):       
         t_emb = sin_embedding(self.ch)(t)
         t_emb = nn.swish(nn.Dense(4 * self.ch)(t_emb))
         t_emb = nn.Dense(4 * self.ch)(t_emb)
@@ -112,7 +112,7 @@ class UNet(nn.Module):
         
         for i, scale in enumerate(self.scale):
             for j in range(self.num_res_blocks):
-                ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, dropout_flag)
+                ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, training)
                 
                 if ft.shape[1] in self.add_attn:
                     ft = SelfAttention(num_groups=self.groups)(ft)
@@ -126,9 +126,9 @@ class UNet(nn.Module):
                 
         # Middle
         assert scale == self.scale[-1]
-        ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, dropout_flag)
+        ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, training)
         ft = SelfAttention(num_groups=self.groups)(ft)
-        ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, dropout_flag)
+        ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, training)
         # print(f"Feature dimension at 'middle' part: {ft.shape}")
         
         # Upsampling
@@ -136,7 +136,7 @@ class UNet(nn.Module):
             for j in range(self.num_res_blocks + 1):
                 assert residual[-1].shape[0:3] == ft.shape[0:3]
                 ft = jnp.concatenate([ft, residual.pop()], 3)
-                ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, dropout_flag)
+                ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, training)
                 
                 if ft.shape[1] in self.add_attn:
                     ft = SelfAttention(num_groups=self.groups)(ft)
