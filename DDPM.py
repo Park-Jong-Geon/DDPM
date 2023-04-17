@@ -31,20 +31,9 @@ class DDPM(utils):
         # model = UNet()
         model = UNet(self.ch, self.groups, self.scale, self.add_attn, self.dropout_rate, self.num_res_blocks)
         self.img_dim = self.data_dim if self.new_dim == None else self.new_dim
-        params = model.init(self.key, jnp.ones(shape=(1, *self.img_dim)), jnp.ones(shape=(1, )))['params']
-        '''
-        scheduled_lr = optax.join_schedules(
-                [optax.linear_schedule(init_value=0, end_value=self.lr, transition_steps=self.warmup_steps), optax.constant_schedule(self.lr)],
-                [self.warmup_steps]
-            )
-        '''
-        scheduled_lr = optax.warmup_exponential_decay_schedule(
-                init_value=0.0,
-                peak_value=self.lr,
-                warmup_steps=self.warmup_steps,
-                decay_rate=1,
-                transition_steps=1
-            )
+        params = model.init(self.key, jnp.ones(shape=(1, *self.img_dim)), jnp.ones(shape=(1, )), False)['params']
+
+        scheduled_lr = optax.linear_schedule(init_value=0, end_value=self.lr, transition_steps=self.warmup_steps)
         tx = optax.chain(optax.clip(self.grad_clip), optax.adam(scheduled_lr))
         
         self.state = train_state.TrainState.create(apply_fn=model.apply, params=params, tx=tx)
@@ -55,7 +44,7 @@ class DDPM(utils):
         def update(state, ema_state, x_0, t, eps):
             
             def loss_fn(params, x_t, t, eps):
-                eps_theta = state.apply_fn({'params': params}, x_t, t)
+                eps_theta = state.apply_fn({'params': params}, x_t, t, False, rngs={'dropout': self.random_seed})
                 loss = jnp.mean((eps - eps_theta) ** 2)
                 return loss
             
@@ -73,7 +62,7 @@ class DDPM(utils):
             return loss, state, ema_state
 
         def apply_model(state, x, t):
-            return state.apply_fn({'params': state.params}, x, t)
+            return state.apply_fn({'params': state.params}, x, t, True)
 
         def backward_process(x_t, t, eps_theta, eps):
             beta_t = self.beta[t]

@@ -32,15 +32,15 @@ class resnet_block(nn.Module):
     dropout_rate: float
     
     @nn.compact
-    def __call__(self, x, t_emb):
-        ft = nn.silu(nn.GroupNorm(num_groups=self.groups)(x))
+    def __call__(self, x, t_emb, dropout_flag):
+        ft = nn.swish(nn.GroupNorm(num_groups=self.groups)(x))
         ft = nn.Conv(self.ch, (3, 3))(ft)
         
-        t_emb = nn.Dense(self.ch)(nn.silu(t_emb))
+        t_emb = nn.Dense(self.ch)(nn.swish(t_emb))
         ft += t_emb[:, None, None, :]
 
-        ft = nn.silu(nn.GroupNorm(num_groups=self.groups)(ft))
-        ft = nn.Dropout(rate=self.dropout_rate, deterministic=True)(ft)
+        ft = nn.swish(nn.GroupNorm(num_groups=self.groups)(ft))
+        ft = nn.Dropout(rate=self.dropout_rate, deterministic=dropout_flag)(ft)
         ft = nn.Conv(self.ch, (3, 3))(ft)
         
         if x.shape[-1] != self.ch:
@@ -94,15 +94,12 @@ class UNet(nn.Module):
     scale: tuple
     add_attn: tuple
     dropout_rate: float
-    # num_heads: int
     num_res_blocks : int
     
     @nn.compact
-    def __call__(self, x, t):       
+    def __call__(self, x, t, dropout_flag):       
         t_emb = sin_embedding(self.ch)(t)
-        
-        # Why are the following two lines necessary?
-        t_emb = nn.silu(nn.Dense(4 * self.ch)(t_emb))
+        t_emb = nn.swish(nn.Dense(4 * self.ch)(t_emb))
         t_emb = nn.Dense(4 * self.ch)(t_emb)
         
         # Initial layer
@@ -115,7 +112,7 @@ class UNet(nn.Module):
         
         for i, scale in enumerate(self.scale):
             for j in range(self.num_res_blocks):
-                ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
+                ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, dropout_flag)
                 
                 if ft.shape[1] in self.add_attn:
                     ft = SelfAttention(num_groups=self.groups)(ft)
@@ -123,16 +120,15 @@ class UNet(nn.Module):
                 residual.append(ft)
             
             if i < scale_len-1:
-                #ft = nn.avg_pool(ft, (2, 2), (2, 2))
                 ft = nn.Conv(self.ch * scale, (3, 3), 2, (1, 1))(ft)
                 residual.append(ft)
             # print(f"Feature dimension at 'downsampling' part: {ft.shape}")
                 
         # Middle
         assert scale == self.scale[-1]
-        ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
+        ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, dropout_flag)
         ft = SelfAttention(num_groups=self.groups)(ft)
-        ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
+        ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, dropout_flag)
         # print(f"Feature dimension at 'middle' part: {ft.shape}")
         
         # Upsampling
@@ -140,7 +136,7 @@ class UNet(nn.Module):
             for j in range(self.num_res_blocks + 1):
                 assert residual[-1].shape[0:3] == ft.shape[0:3]
                 ft = jnp.concatenate([ft, residual.pop()], 3)
-                ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb)
+                ft = resnet_block(self.ch * scale, self.groups, self.dropout_rate)(ft, t_emb, dropout_flag)
                 
                 if ft.shape[1] in self.add_attn:
                     ft = SelfAttention(num_groups=self.groups)(ft)
@@ -154,7 +150,7 @@ class UNet(nn.Module):
         assert not residual
         
         # Terminal layer
-        ft = nn.silu(nn.GroupNorm(num_groups=self.groups)(ft))
+        ft = nn.swish(nn.GroupNorm(num_groups=self.groups)(ft))
         out = nn.Conv(x.shape[-1], (3, 3))(ft)
         
         return out
