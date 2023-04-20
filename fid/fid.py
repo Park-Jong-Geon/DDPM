@@ -5,7 +5,7 @@ from PIL import Image
 import os
 import scipy
 from tqdm import tqdm
-from jax_fid.inception import InceptionV3
+from fid.inception import InceptionV3
 from functools import partial
 
 class FID:
@@ -13,7 +13,8 @@ class FID:
         model = InceptionV3(pretrained=True)
         self.params = model.init(jax.random.PRNGKey(random_seed), jnp.ones((1, 256, 256, 3)))
         self.apply_fn = jax.jit(partial(model.apply, train=False))
-        self.img_size = (299, 299)
+        # self.img_size = (299, 299)
+        self.img_size = (310, 310)
     
     def calculate_fid(self, path1, path2):
         mu1, sigma1 = self.compute_statistics(path1, self.params, self.apply_fn, 100, self.img_size)
@@ -40,7 +41,7 @@ class FID:
                 )
             img = np.array(img) / 255.0
             images.append(img)
-
+        
         num_batches = int(len(images) // batch_size)
         act = []
         for i in tqdm(range(num_batches)):

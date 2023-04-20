@@ -7,6 +7,7 @@ import jax
 import jax.numpy as jnp
 import flax
 from flax.training import checkpoints
+import matplotlib.pyplot as plt
 from PIL import Image
 from config import config
 
@@ -119,4 +120,18 @@ class utils(config):
         print(f"Save path : {self.save_dir}", flush=True)
         if self.ckpt_dir != None:
             print(f"Checkpoint loaded from : {self.ckpt_dir}", flush=True)
+    
+    def show_batch(self, m, n, path):
+        files = os.listdir(path)
+        assert len(files) >= m*n 
         
+        rand = jax.random.randint(jax.random.PRNGKey(self.random_seed), (m,n), 1, len(files)+1)
+        
+        fig = plt.figure(figsize=(m, n))
+        for i in range(m):
+            for j in range(n):
+                plt.subplot(m, n, m*i+j+1)
+                plt.axis('off')
+                plt.subplots_adjust(wspace = 0.1, hspace = 0.1)
+                plt.imshow(plt.imread(os.path.join(path, files[rand[i][j]])))
+        plt.savefig(f'{m*n}_images_from_{os.path.basename(path)}.png', bbox_inches = 'tight', pad_inches = 0.06)

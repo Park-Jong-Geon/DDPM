@@ -10,7 +10,7 @@ import optax
 
 from UNet import UNet
 from utils import utils
-from jax_fid.fid import FID
+from fid.fid import FID
 
 class DDPM(utils):
     def __init__(self):

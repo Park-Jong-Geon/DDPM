@@ -39,8 +39,8 @@ class config(UNet_params):
         self.devices = jax.local_device_count()
         self.device_memory_threshold = 2500
         self.stats_dir = "fid_stats_cifar10_train.npz"
-        self.ckpt_dir = "last_shot_2/save_no_ema"
-        self.ckpt_ema_dir = "last_shot_2/save"
+        self.ckpt_dir = "last_shot_2/save_800k_no_ema"
+        self.ckpt_ema_dir = "last_shot_2/save_800k"
         self.save_dir = "last_shot_2/save"
-        self.sample_dir = "last_shot_2/sample"
+        self.sample_dir = "last_shot_2/sample_680k_FID_3.01"
         self.temp_dir = "last_shot_2/temp"
