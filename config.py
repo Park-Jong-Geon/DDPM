@@ -13,7 +13,7 @@ class config(UNet_params):
     def __init__(self):
         super().__init__()
         
-        self.random_seed = 42
+        self.random_seed = 156800
         
         self.dataset = 'cifar10'
         self.dataset_size = 50000
@@ -22,7 +22,7 @@ class config(UNet_params):
         
         self.lr = 2e-4
         self.batch = 128
-        self.step = 1000000
+        self.step = 800000
         
         self.time_steps = 1000
         self.beta_0 = 0.0001
@@ -39,8 +39,8 @@ class config(UNet_params):
         self.devices = jax.local_device_count()
         self.device_memory_threshold = 2500
         self.stats_dir = "fid_stats_cifar10_train.npz"
-        self.ckpt_dir = "last_shot_2/save_800k_no_ema"
-        self.ckpt_ema_dir = "last_shot_2/save_800k"
-        self.save_dir = "last_shot_2/save"
-        self.sample_dir = "last_shot_2/sample_680k_FID_3.01"
-        self.temp_dir = "last_shot_2/temp"
+        self.ckpt_dir = 'lastshot/save_no_ema'
+        self.ckpt_ema_dir = 'lastshot/save'
+        self.save_dir = "experiment/save"
+        self.sample_dir = "experiment/sample"
+        self.temp_dir = "experiment/temp"

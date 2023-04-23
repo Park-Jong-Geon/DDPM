@@ -18,7 +18,7 @@ import os
 import gzip, pickle
 # import tensorflow as tf
 import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+# from imageio import imread
 from imageio.v2 import imread
 from scipy import linalg
 import pathlib
@@ -78,6 +78,7 @@ def get_activations(images, sess, batch_size=50, verbose=False):
     -- A numpy array of dimension (num images, 2048) that contains the
        activations of the given tensor when feeding inception with the query tensor.
     """
+    
     inception_layer = _get_inception_layer(sess)
     n_images = images.shape[0]
     if batch_size > n_images:
@@ -313,6 +314,9 @@ def calculate_fid_given_paths(paths, inception_path, low_profile=False):
 
 
 if __name__ == "__main__":
+    
+    tf.disable_v2_behavior()
+    
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument("path", type=str, nargs=2,
@@ -325,5 +329,5 @@ if __name__ == "__main__":
         help='Keep only one batch of images in memory at a time. This reduces memory footprint, but may decrease speed slightly.')
     args = parser.parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-    fid_value = calculate_fid_given_paths(args.path, args.inception, low_profile=args.lowprofile)
+    fid_value = strategy.run(calculate_fid_given_paths, args=(args.path, args.inception, args.lowprofile))
     print("FID: ", fid_value)

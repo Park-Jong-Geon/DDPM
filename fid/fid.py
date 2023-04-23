@@ -13,8 +13,7 @@ class FID:
         model = InceptionV3(pretrained=True)
         self.params = model.init(jax.random.PRNGKey(random_seed), jnp.ones((1, 256, 256, 3)))
         self.apply_fn = jax.jit(partial(model.apply, train=False))
-        # self.img_size = (299, 299)
-        self.img_size = (310, 310)
+        self.img_size = (299, 299)
     
     def calculate_fid(self, path1, path2):
         mu1, sigma1 = self.compute_statistics(path1, self.params, self.apply_fn, 100, self.img_size)

@@ -126,7 +126,7 @@ class DDPM(utils):
 
             if self.state.step[0] >= self.step:
                 break
-
+    
     def sample(self, state, sample_num):
         def img_rescale(imgs):
             imgs = np.clip(imgs, a_min=-1, a_max=1)
@@ -177,3 +177,6 @@ class DDPM(utils):
         state = flax.jax_utils.unreplicate(state)  
         self.save_imgs(samples, state.step)
         
+        samples = img_rescale(samples)
+        state = flax.jax_utils.unreplicate(state)  
+        self.save_imgs(samples, state.step)
